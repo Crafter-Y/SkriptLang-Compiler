@@ -1,5 +1,6 @@
 package de.craftery;
 
+import de.craftery.parser.SkriptParser;
 import de.craftery.writer.pom.PomGenerator;
 import lombok.Getter;
 
@@ -20,11 +21,10 @@ public class Main {
 
         List<String> inputFile = readFile(args[0]);
 
+        SkriptParser parser = new SkriptParser();
         for (String line : inputFile) {
-            System.out.println(line);
+            parser.acceptLine(line);
         }
-
-        PomGenerator.initialize();
 
         projectGenerator.generate();
     }

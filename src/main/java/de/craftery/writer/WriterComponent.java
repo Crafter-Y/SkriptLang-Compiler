@@ -19,7 +19,7 @@ public abstract class WriterComponent {
     private String fileName;
 
     @Setter
-    private String folderPrefix = "out/";
+    private String folderPrefix = "out/src/main/java/";
 
     @Setter
     private String packagePrefix = null;

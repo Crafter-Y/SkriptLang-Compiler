@@ -13,7 +13,6 @@ public class CommandTriggerNode extends StructureNode {
             System.exit(1);
         }
         if (indentation < 2) {
-            Main.log(Level.INFO, "CommandTriggerNode", "Redirected from CommandTriggerNode");
             SkriptParser.exitNode().acceptLine(line, indentation);
             return;
         }

@@ -2,6 +2,7 @@ package de.craftery.parser.structure;
 
 import de.craftery.Main;
 import de.craftery.StringUtils;
+import de.craftery.TimeUtils;
 import de.craftery.parser.SkriptParser;
 import de.craftery.writer.command.CommandGenerator;
 
@@ -16,9 +17,8 @@ public class CommandNode extends StructureNode {
             System.exit(1);
         }
         if (indentation == 0) {
-            Main.log(Level.INFO, "CommandNode", "Redirected from CommandNode");
             SkriptParser.exitNode().acceptLine(line, indentation);
-            commandGenerator.prependReturnStatement();
+            commandGenerator.build();
             return;
         }
         String fieldName = line.split(":")[0];
@@ -57,15 +57,15 @@ public class CommandNode extends StructureNode {
                 break;
             }
             case "cooldown": {
-                Main.log(Level.WARNING, "CommandNode", "Cooldown is not yet implemented!");
+                commandGenerator.setCooldown(TimeUtils.parseTime(fieldValue.trim()));
                 break;
             }
             case "cooldown message": {
-                Main.log(Level.WARNING, "CommandNode", "Cooldown Message is not yet implemented!");
+                commandGenerator.setCooldownMessage(fieldValue.trim());
                 break;
             }
             case "cooldown bypass": {
-                Main.log(Level.WARNING, "CommandNode", "Cooldown Bypass is not yet implemented!");
+                commandGenerator.setCooldownBypassPermission(fieldValue.trim());
                 break;
             }
             case "trigger": {

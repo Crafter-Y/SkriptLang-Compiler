@@ -28,6 +28,7 @@ public class RootNode extends StructureNode {
                 SkriptParser.entryNode(node);
                 break;
             case "": // empty case will happen at the end of the file
+                MainGenerator.getInstance().build();
                 break;
             default:
                 reportUnknownToken(line, tokens[0], 0);

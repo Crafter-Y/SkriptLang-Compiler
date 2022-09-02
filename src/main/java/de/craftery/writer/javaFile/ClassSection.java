@@ -32,8 +32,15 @@ public class ClassSection extends WritingSection {
     @Getter
     private final List<RawMethodSection> methods = new ArrayList<>();
 
+    @Getter
+    private final List<Variable> variables = new ArrayList<>();
+
     public void addMethod(RawMethodSection method) {
         this.methods.add(method);
+    }
+
+    public void addVariable(Variable variable) {
+        this.variables.add(variable);
     }
 
     public void addImplementationClass(String className) {
@@ -67,6 +74,14 @@ public class ClassSection extends WritingSection {
                         (extendsClass.isEmpty() ? "" : "extends " + extendsClass + " ") +
                         getImplementingInterfaces() +
                         "{");
+        for (Variable variable : variables) {
+            String variableBuilder = "    ".repeat(Math.max(0, this.getIndentationLevel() + 1)) +
+                    variable.build();
+            this.getLines().add(variableBuilder);
+        }
+        if (variables.size() != 0) {
+            this.getLines().add("");
+        }
         for (RawMethodSection method : methods) {
             this.getLines().addAll(method.getIndentedLines());
         }

@@ -1,10 +1,14 @@
 package de.craftery.writer.core;
 
-import de.craftery.writer.javaFile.ClassSection;
-import de.craftery.writer.javaFile.JavaFileGenerator;
-import de.craftery.writer.javaFile.RawMethodSection;
+import de.craftery.Main;
+import de.craftery.writer.javaFile.*;
+
+import java.util.logging.Level;
 
 public class MainGenerator extends JavaFileGenerator {
+    private static MainGenerator instance;
+    private boolean isCooldownHandlerRequired = false;
+
     public MainGenerator() {
         this.setNeeded(true);
         this.setFileName("Main");
@@ -26,7 +30,47 @@ public class MainGenerator extends JavaFileGenerator {
         this.addClass(classSection);
         this.requireImport("org.bukkit.plugin.java.JavaPlugin");
     }
-    private static MainGenerator instance;
+
+    public void build() {
+        ClassSection classSection = this.getClasses().get(0);
+        if (this.isCooldownHandlerRequired) {
+            Variable cooldowns = new Variable();
+            cooldowns.setName("cooldowns");
+            cooldowns.setAccessLevel(AccessLevel.PRIVATE);
+            cooldowns.setStatic(true);
+            cooldowns.setFinal(true);
+            cooldowns.setType("Map<String, Map<String, Long>>");
+            cooldowns.setValue("new HashMap<>()");
+            classSection.addVariable(cooldowns);
+
+            RawMethodSection getCooldownMethod = new RawMethodSection(1);
+            getCooldownMethod.setRawMethodSignature("public static Long getCooldown(String sender, String command)");
+            getCooldownMethod.addLine("if (cooldowns.get(command) == null) {");
+            getCooldownMethod.addLine("    return 0L;");
+            getCooldownMethod.addLine("} else if (cooldowns.get(command).get(sender) == null) {");
+            getCooldownMethod.addLine("    return 0L;");
+            getCooldownMethod.addLine("} else {");
+            getCooldownMethod.addLine("    return cooldowns.get(command).get(sender);");
+            getCooldownMethod.addLine("}");
+            classSection.addMethod(getCooldownMethod);
+
+            RawMethodSection setCooldownMethod = new RawMethodSection(1);
+            setCooldownMethod.setRawMethodSignature("public static void setCooldown(String sender, String command, Long cooldown)");
+            setCooldownMethod.addLine("Map<String, Long> commandMap = cooldowns.get(command);");
+            setCooldownMethod.addLine("if (commandMap == null) commandMap = new HashMap<>();");
+            setCooldownMethod.addLine("commandMap.put(sender, System.currentTimeMillis() + cooldown);");
+            setCooldownMethod.addLine("cooldowns.put(command, commandMap);");
+            classSection.addMethod(setCooldownMethod);
+
+            this.requireImport("java.util.Map");
+            this.requireImport("java.util.HashMap");
+        }
+    }
+
+    public void requireCooldownHandler() {
+        this.isCooldownHandlerRequired = true;
+    }
+
     public static MainGenerator getInstance() {
         if (instance == null) {
             instance = new MainGenerator();

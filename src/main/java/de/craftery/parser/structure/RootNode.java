@@ -1,9 +1,12 @@
 package de.craftery.parser.structure;
 
+import de.craftery.Main;
 import de.craftery.parser.SkriptParser;
 import de.craftery.writer.core.MainGenerator;
 import de.craftery.writer.core.PluginYMLGenerator;
 import de.craftery.writer.pom.PomGenerator;
+
+import java.util.logging.Level;
 
 public class RootNode extends StructureNode {
     public RootNode() {
@@ -15,7 +18,7 @@ public class RootNode extends StructureNode {
     @Override
     public void acceptLine(String line, int indentation) {
         if (indentation != 0) {
-            System.err.println("There should not be an indentation here!");
+            Main.log(Level.WARNING, "RootNode" , "There should not be an indentation here! " + line);
             System.exit(1);
         }
         String[] tokens = line.trim().split(" ");
@@ -23,6 +26,8 @@ public class RootNode extends StructureNode {
             case "command":
                 CommandNode node = new CommandNode().initialize(line);
                 SkriptParser.entryNode(node);
+                break;
+            case "": // empty case will happen at the end of the file
                 break;
             default:
                 reportUnknownToken(line, tokens[0], 0);

@@ -16,6 +16,10 @@ public class PluginYMLCommandSection extends WritingSection {
         this.commands.put(command, properties);
     }
 
+    public PluginYMLCommand getCommand(String command) {
+        return this.commands.get(command);
+    }
+
     @Override
     public void buildLines() {
         if (commands.size() != 0) {

@@ -7,9 +7,11 @@ import lombok.Setter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public abstract class WriterComponent {
     public WriterComponent() {
@@ -40,24 +42,22 @@ public abstract class WriterComponent {
         prepareContent();
         try {
             File file = new File(buildPackagePath());
-            System.out.println(file.getAbsolutePath());
+            Main.log(Level.SEVERE, "WriterComponent", "Generating file: " + buildPackagePath());
             if (!file.exists()) {
                 Files.createDirectories(file.getParentFile().toPath());
-                System.out.println("Generating file: " + file.getAbsolutePath());
                 boolean succeed = file.createNewFile();
                 if (!succeed) {
-                    System.err.println("Could not create file!");
+                    Main.log(Level.WARNING, "WriterComponent", "Could not create this file!");
                     System.exit(1);
                 }
             }
-            FileWriter myWriter = new FileWriter(buildPackagePath());
+            FileWriter myWriter = new FileWriter(buildPackagePath(), StandardCharsets.UTF_8);
             for (String line : content) {
                 myWriter.write(line + "\n");
             }
             myWriter.close();
-            System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
-            System.out.println("Writing to the file failed.");
+            Main.log(Level.WARNING, "WriterComponent", "Writing failed!");
             e.printStackTrace();
         }
     }

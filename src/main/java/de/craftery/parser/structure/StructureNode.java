@@ -1,12 +1,17 @@
 package de.craftery.parser.structure;
 
+import de.craftery.Fragment;
 import de.craftery.Main;
 
 import java.util.logging.Level;
 
 public abstract class StructureNode {
-    public abstract void acceptLine(String line, int indentation);
-    public abstract StructureNode initialize(String line);
+    public abstract void acceptLine(Fragment line, int indentation);
+    public abstract StructureNode initialize(Fragment line);
+
+    public void reportUnknownToken(Fragment fragment, String token, int index) {
+        this.reportUnknownToken(fragment.getContents(), token, index);
+    }
 
     public void reportUnknownToken(String line, String token, int index) {
         Main.log(Level.WARNING, "StructureNode", "Unknown token: '" + token + "'");

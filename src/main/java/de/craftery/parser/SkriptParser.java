@@ -1,5 +1,6 @@
 package de.craftery.parser;
 
+import de.craftery.Fragment;
 import de.craftery.Main;
 import de.craftery.parser.structure.RootNode;
 import de.craftery.parser.structure.StructureNode;
@@ -42,10 +43,10 @@ public class SkriptParser {
             Main.log(Level.WARNING, "SkriptParser", "Indentation error on line " + lineNumber + ": '" + line + "'");
             System.exit(1);
         }
-        structureLevel.peek().acceptLine(line, indentationSpaces / 4);
+        structureLevel.peek().acceptLine(new Fragment(line), indentationSpaces / 4);
     }
 
     public void finish() {
-        structureLevel.peek().acceptLine("", 0);
+        structureLevel.peek().acceptLine(new Fragment(""), 0);
     }
 }

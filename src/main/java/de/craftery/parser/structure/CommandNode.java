@@ -1,5 +1,6 @@
 package de.craftery.parser.structure;
 
+import de.craftery.Fragment;
 import de.craftery.Main;
 import de.craftery.StringUtils;
 import de.craftery.TimeUtils;
@@ -11,7 +12,7 @@ import java.util.logging.Level;
 public class CommandNode extends StructureNode {
     private CommandGenerator commandGenerator;
     @Override
-    public void acceptLine(String line, int indentation) {
+    public void acceptLine(Fragment line, int indentation) {
         if (indentation > 1) {
             Main.log(Level.WARNING, "CommandNode", "Command fields must be indented one time!");
             System.exit(1);
@@ -21,8 +22,8 @@ public class CommandNode extends StructureNode {
             commandGenerator.build();
             return;
         }
-        String fieldName = line.split(":")[0];
-        String fieldValue = line.substring(fieldName.length() + 1);
+        String fieldName = line.getContents().split(":")[0];
+        String fieldValue = line.getContents().substring(fieldName.length() + 1);
         switch (fieldName) {
             case "aliases": {
                 String[] aliases = fieldValue.split(",");
@@ -70,6 +71,7 @@ public class CommandNode extends StructureNode {
             }
             case "trigger": {
                 CommandTriggerNode node = new CommandTriggerNode().initialize(line);
+                node.setGenerator(commandGenerator);
                 SkriptParser.entryNode(node);
                 break;
             }
@@ -80,8 +82,8 @@ public class CommandNode extends StructureNode {
     }
 
     @Override
-    public CommandNode initialize(String line) {
-        String[] tokens = line.trim().split(" ");
+    public CommandNode initialize(Fragment line) {
+        String[] tokens = line.getContents().trim().split(" ");
         if (tokens.length < 2) {
             Main.log(Level.WARNING, "CommandNode", "A Command must have a name!");
             Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");

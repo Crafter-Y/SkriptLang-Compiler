@@ -7,6 +7,9 @@ import de.craftery.writer.javaFile.RawMethodSection;
 import de.craftery.writer.core.MainGenerator;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CommandGenerator extends JavaFileGenerator {
     private String commandName;
     private boolean isPlayerOnly;
@@ -17,9 +20,15 @@ public class CommandGenerator extends JavaFileGenerator {
     private String cooldownBypassPermission = "";
     private boolean hasCooldown = false;
     private long cooldown = 0;
+
+    private final List<String> bodyLines = new ArrayList<>();
     public CommandGenerator() {
         this.setPackage("command");
         this.setNeeded(true);
+    }
+
+    public void addBodyLine(String line) {
+        bodyLines.add(line);
     }
 
     public void build() {
@@ -47,8 +56,13 @@ public class CommandGenerator extends JavaFileGenerator {
             commandSection.addLine("    sender.sendMessage(\""+ playerOnlyMessage +"\");");
             commandSection.addLine("    return true;");
             commandSection.addLine("}");
+            commandSection.addLine("Player player = (Player) sender;");
             commandSection.addLine("");
             this.requireImport("org.bukkit.entity.Player");
+        }
+
+        for (String line : bodyLines) {
+            commandSection.addLine(line);
         }
 
         // return statement

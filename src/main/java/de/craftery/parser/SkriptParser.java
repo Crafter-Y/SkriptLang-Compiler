@@ -24,11 +24,9 @@ public class SkriptParser {
         SkriptParser.getInstance().structureLevel.pop();
         return SkriptParser.getInstance().structureLevel.peek();
     }
-    private int lineNumber = 0;
 
     private final Stack<StructureNode> structureLevel = new Stack<>();
-    public void acceptLine(String line) {
-        lineNumber++;
+    public void acceptLine(String line, int lineNumber) {
         if (line.trim().equals("")) {
             Main.log(Level.INFO, "SkriptParser", "Skipping Line " + lineNumber + " :'" + line + "'");
             return;

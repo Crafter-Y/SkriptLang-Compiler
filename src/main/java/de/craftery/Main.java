@@ -1,7 +1,6 @@
 package de.craftery;
 
 import de.craftery.parser.SkriptParser;
-import de.craftery.writer.pom.PomGenerator;
 import lombok.Getter;
 
 import java.io.File;
@@ -23,8 +22,12 @@ public class Main {
         List<String> inputFile = readFile(args[0]);
 
         SkriptParser parser = new SkriptParser();
-        for (String line : inputFile) {
-            parser.acceptLine(line);
+        for (int i = 0; i < inputFile.size(); i++) {
+            String line = inputFile.get(i);
+            if (line.trim().startsWith("#")) {
+                continue;
+            }
+            parser.acceptLine(line, i + 1);
         }
         parser.finish();
 

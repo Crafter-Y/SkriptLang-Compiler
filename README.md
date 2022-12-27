@@ -4,4 +4,5 @@ This project aims to compile the "code" files designed for the Minecraft Plugin 
 ## Goals
 
 - [x] A Basic Command [(Video)](https://www.youtube.com/watch?v=AN8O2bTZH-c)
+- [ ] [GER] send Action [(Video)](https://www.youtube.com/watch?v=GCJUH8O5lJ8)
 

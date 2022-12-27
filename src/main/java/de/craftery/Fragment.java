@@ -38,6 +38,20 @@ public class Fragment {
         }
     }
 
+    public boolean testString() {
+        if (!this.contents.startsWith("\"")) return false;
+        StringBuilder tester = new StringBuilder();
+        for (int i = 1; i < this.contents.length(); i++) {
+            char c = this.contents.charAt(i);
+            if (c == '"') {
+                this.testLength = tester.length() + 2;
+                return true;
+            }
+            tester.append(c);
+        }
+        return false;
+    }
+
     public String consume() {
         String removed = this.contents.substring(0, this.testLength);
         this.contents = this.contents.substring(this.testLength);
@@ -48,6 +62,12 @@ public class Fragment {
         String removed = this.contents.substring(0, this.testLength);
         this.contents = this.contents.substring(this.testLength);
         return Integer.parseInt(removed);
+    }
+
+    public String consumeString() {
+        String removed = this.contents.substring(1, this.testLength - 1);
+        this.contents = this.contents.substring(this.testLength);
+        return removed;
     }
 
     public String nextToken() {

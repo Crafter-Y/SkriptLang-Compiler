@@ -10,13 +10,24 @@ import lombok.Setter;
 import java.util.logging.Level;
 
 public class CommandTriggerNode extends StructureNode {
+    public CommandTriggerNode() {
+        this.setMaxIndentation(2);
+    }
+
     @Setter
     private CommandGenerator generator;
 
     @Override
     public void acceptLine(Fragment line, int indentation) {
-        if (indentation > 2) {
-            Main.log(Level.WARNING, "CommandTriggerNode", "Command Trigger Fields must be indented two times!");
+        if (indentation < this.getMaxIndentation()) {
+            while (this.getMaxIndentation() > 2) {
+                this.setMaxIndentation(this.getMaxIndentation() - 1);
+                generator.addBodyLine("}");
+            }
+        }
+
+        if (indentation > this.getMaxIndentation()) {
+            Main.log(Level.WARNING, "CommandTriggerNode", "Indentation error!");
             System.exit(1);
         }
         if (generator == null) {

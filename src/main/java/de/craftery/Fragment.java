@@ -14,7 +14,7 @@ public class Fragment {
     }
 
     public boolean test(String tester) {
-        if (this.contents.startsWith(tester + " ") || this.contents.equals(tester)) {
+        if (this.contents.startsWith(tester + " ") || this.contents.equals(tester) || this.contents.startsWith(tester + ":")) {
             this.testLength = tester.length();
             return true;
         }
@@ -39,11 +39,19 @@ public class Fragment {
     }
 
     public boolean testString() {
-        if (!this.contents.startsWith("\"")) return false;
+        return testByDelimiter('"');
+    }
+
+    public boolean testByDelimiter(char delimiter) {
+        return testByDelimiters(delimiter, delimiter);
+    }
+
+    public boolean testByDelimiters(char delimiter1, char delimiter2) {
+        if (this.contents.charAt(0) != delimiter1) return false;
         StringBuilder tester = new StringBuilder();
         for (int i = 1; i < this.contents.length(); i++) {
             char c = this.contents.charAt(i);
-            if (c == '"') {
+            if (c == delimiter2) {
                 this.testLength = tester.length() + 2;
                 return true;
             }
@@ -55,23 +63,28 @@ public class Fragment {
     public String consume() {
         String removed = this.contents.substring(0, this.testLength);
         this.contents = this.contents.substring(this.testLength);
+        this.trim();
         return removed;
     }
 
     public Integer consumeInt() {
         String removed = this.contents.substring(0, this.testLength);
         this.contents = this.contents.substring(this.testLength);
+        this.trim();
         return Integer.parseInt(removed);
     }
 
-    public String consumeString() {
+    public String consumeDelimitedExpression() {
         String removed = this.contents.substring(1, this.testLength - 1);
         this.contents = this.contents.substring(this.testLength);
+        this.trim();
         return removed;
     }
 
     public String nextToken() {
-        return this.contents.split(" ")[0];
+        String nextToken = this.contents.split(" ")[0];
+        this.testLength = nextToken.length();
+        return nextToken;
     }
 
     public boolean isEmpty() {
@@ -93,7 +106,7 @@ public class Fragment {
         return null;
     }
 
-    public void trim() {
+    private void trim() {
         this.contents = this.contents.trim();
     }
 }

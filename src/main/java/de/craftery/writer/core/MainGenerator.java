@@ -1,13 +1,12 @@
 package de.craftery.writer.core;
 
-import de.craftery.Main;
 import de.craftery.writer.javaFile.*;
 
-import java.util.logging.Level;
 
 public class MainGenerator extends JavaFileGenerator {
     private static MainGenerator instance;
     private boolean isCooldownHandlerRequired = false;
+    private boolean isVariableStoreRequired = false;
 
     public MainGenerator() {
         this.setNeeded(true);
@@ -64,11 +63,44 @@ public class MainGenerator extends JavaFileGenerator {
 
             this.requireImport("java.util.Map");
             this.requireImport("java.util.HashMap");
+
+        }
+        if (this.isVariableStoreRequired) {
+            Variable variableStore = new Variable();
+            variableStore.setName("variableStore");
+            variableStore.setAccessLevel(AccessLevel.PRIVATE);
+            variableStore.setStatic(true);
+            variableStore.setFinal(true);
+            variableStore.setType("Map<String, Object>");
+            variableStore.setValue("new HashMap<>()");
+            classSection.addVariable(variableStore);
+
+            RawMethodSection variableSetter = new RawMethodSection(1);
+            variableSetter.setRawMethodSignature("public static void setVariable(String key, Object value)");
+            variableSetter.addLine("variableStore.put(key, value);");
+            classSection.addMethod(variableSetter);
+
+            RawMethodSection variableGetter = new RawMethodSection(1);
+            variableGetter.setRawMethodSignature("public static Object getVariable(String key)");
+            variableGetter.addLine("return variableStore.get(key);");
+            classSection.addMethod(variableGetter);
+
+            RawMethodSection variableRemover = new RawMethodSection(1);
+            variableRemover.setRawMethodSignature("public static void deleteVariable(String key)");
+            variableRemover.addLine("variableStore.remove(key);");
+            classSection.addMethod(variableRemover);
+
+            this.requireImport("java.util.Map");
+            this.requireImport("java.util.HashMap");
         }
     }
 
     public void requireCooldownHandler() {
         this.isCooldownHandlerRequired = true;
+    }
+
+    public void requireVariableStore() {
+        this.isVariableStoreRequired = true;
     }
 
     public static MainGenerator getInstance() {

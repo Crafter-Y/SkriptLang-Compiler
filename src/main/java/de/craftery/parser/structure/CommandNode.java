@@ -72,6 +72,7 @@ public class CommandNode extends StructureNode {
             case "trigger": {
                 CommandTriggerNode node = new CommandTriggerNode().initialize(line);
                 node.setGenerator(commandGenerator);
+                commandGenerator.setNode(node);
                 SkriptParser.entryNode(node);
                 break;
             }
@@ -83,23 +84,41 @@ public class CommandNode extends StructureNode {
 
     @Override
     public CommandNode initialize(Fragment line) {
-        String[] tokens = line.getContents().trim().split(" ");
-        if (tokens.length < 2) {
-            Main.log(Level.WARNING, "CommandNode", "A Command must have a name!");
-            Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");
+        if (!line.test("command")) {
+            Main.log(Level.WARNING, "CommandNode", "This should not happen. Please report this bug!");
             System.exit(1);
         }
+        line.consume();
 
-        if (!tokens[1].matches("^/\\S+:$")) {
+        String next = line.nextToken();
+        if (!next.matches("/\\S+")) {
             Main.log(Level.WARNING, "CommandNode", "Wrong Syntax!");
             Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");
             System.exit(1);
         }
+        line.consume();
 
-        String commandName = StringUtils.toTitleCase(tokens[1].substring(1, tokens[1].length() - 1));
-
+        String commandName = StringUtils.toTitleCase(next.substring(1));
         this.commandGenerator = new CommandGenerator();
         this.commandGenerator.initialize(commandName);
+
+        while(!line.isEmpty()) {
+            next = line.nextToken();
+            line.consume();
+
+            if (next.equals(":")) {
+                break;
+            } else if (next.equals("<string>")) {
+                Main.log(Level.WARNING, "CommandNode", "unhandled String Argument!");
+            } else if (next.equals("<string>:")) {
+                Main.log(Level.WARNING, "CommandNode", "unhandled String Argument!");
+                break;
+            } else {
+                Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + next);
+                System.exit(1);
+            }
+
+        }
 
         return this;
     }

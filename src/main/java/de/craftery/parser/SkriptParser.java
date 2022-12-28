@@ -33,9 +33,16 @@ public class SkriptParser {
         }
         Main.log(Level.SEVERE, "SkriptParser", "Parsing Line " + lineNumber + " :'" + line + "'");
         int indentationSpaces = 0;
-        while (line.startsWith(" ")) {
-            indentationSpaces++;
-            line = line.substring(1);
+        while (true) {
+            if (line.startsWith(" ")) {
+                indentationSpaces++;
+                line = line.substring(1);
+            } else if(line.startsWith("\t")) {
+                indentationSpaces += 4;
+                line = line.substring(1);
+            } else {
+                break;
+            }
         }
         if (indentationSpaces % 4 != 0) {
             Main.log(Level.WARNING, "SkriptParser", "Indentation error on line " + lineNumber + ": '" + line + "'");

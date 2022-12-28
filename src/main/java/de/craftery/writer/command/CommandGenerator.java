@@ -1,5 +1,6 @@
 package de.craftery.writer.command;
 
+import de.craftery.parser.structure.CommandTriggerNode;
 import de.craftery.writer.core.PluginYMLGenerator;
 import de.craftery.writer.javaFile.ClassSection;
 import de.craftery.writer.javaFile.JavaFileGenerator;
@@ -21,6 +22,9 @@ public class CommandGenerator extends JavaFileGenerator {
     private boolean hasCooldown = false;
     private long cooldown = 0;
 
+    @Setter
+    private CommandTriggerNode node;
+
     private final List<String> bodyLines = new ArrayList<>();
     public CommandGenerator() {
         this.setPackage("command");
@@ -28,7 +32,9 @@ public class CommandGenerator extends JavaFileGenerator {
     }
 
     public void addBodyLine(String line) {
-        bodyLines.add(line);
+        int indent = node.getMaxIndentation() - 2;
+        String lineBuilder = "    ".repeat(Math.max(0, indent)) + line;
+        bodyLines.add(lineBuilder);
     }
 
     public void build() {

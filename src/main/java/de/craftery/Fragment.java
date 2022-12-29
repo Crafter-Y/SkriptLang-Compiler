@@ -84,6 +84,9 @@ public class Fragment {
     public String nextToken() {
         String nextToken = this.contents.split(" ")[0];
         this.testLength = nextToken.length();
+        if (nextToken.length() > 1 && nextToken.trim().endsWith(":")) {
+            this.testLength--;
+        }
         return nextToken;
     }
 

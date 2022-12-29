@@ -23,19 +23,19 @@ public class RootNode extends StructureNode {
             Main.log(Level.WARNING, "RootNode" , "There should not be an indentation here! " + line);
             System.exit(1);
         }
-        String[] tokens = line.getContents().trim().split(" ");
-        switch (tokens[0]) {
-            case "command":
-                CommandNode node = new CommandNode().initialize(line);
-                SkriptParser.entryNode(node);
-                break;
-            case "": // empty case will happen at the end of the file
-                MainGenerator.getInstance().build();
-                FormatterGenerator.getInstance().build();
-                break;
-            default:
-                reportUnknownToken(line, tokens[0], 0);
-                break;
+        if (line.isEmpty()) {
+            MainGenerator.getInstance().build();
+            FormatterGenerator.getInstance().build();
+            return;
+        }
+
+        if (line.test("command")) {
+            line.consume();
+            CommandNode node = new CommandNode().initialize(line);
+            SkriptParser.entryNode(node);
+        } else {
+            reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
         }
     }
 

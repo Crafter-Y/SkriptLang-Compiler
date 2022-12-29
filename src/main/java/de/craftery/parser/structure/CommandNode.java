@@ -84,19 +84,12 @@ public class CommandNode extends StructureNode {
 
     @Override
     public CommandNode initialize(Fragment line) {
-        if (!line.test("command")) {
-            Main.log(Level.WARNING, "CommandNode", "This should not happen. Please report this bug!");
-            System.exit(1);
-        }
-        line.consume();
-
-        String next = line.nextToken();
-        if (!next.matches("/\\S+")) {
+        if (!line.nextToken().matches("/\\S+")) {
             Main.log(Level.WARNING, "CommandNode", "Wrong Syntax!");
             Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");
             System.exit(1);
         }
-        line.consume();
+        String next = line.consume();
 
         String commandName = StringUtils.toTitleCase(next.substring(1));
         this.commandGenerator = new CommandGenerator();

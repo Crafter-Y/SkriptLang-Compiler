@@ -96,16 +96,17 @@ public class CommandNode extends StructureNode {
         this.commandGenerator.initialize(commandName);
 
         while(!line.isEmpty()) {
-            next = line.nextToken();
-            line.consume();
+            //next = line.nextToken();
+            //line.consume();
 
-            if (next.equals(":")) {
+            if (line.test(":")) {
                 break;
-            } else if (next.equals("<string>")) {
-                Main.log(Level.WARNING, "CommandNode", "unhandled String Argument!");
-            } else if (next.equals("<string>:")) {
-                Main.log(Level.WARNING, "CommandNode", "unhandled String Argument!");
-                break;
+            } else if (line.test("<string>")) {
+                line.consume();
+                Main.log(Level.WARNING, "CommandNode", "ignored String argument!");
+            } else if (line.test("[<text>]")) {
+                line.consume();
+                Main.log(Level.WARNING, "CommandNode", "ignored optional Text argument");
             } else {
                 Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + next);
                 System.exit(1);

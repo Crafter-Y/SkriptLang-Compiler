@@ -5,6 +5,8 @@ import lombok.Getter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -100,7 +102,7 @@ public class Main {
     private static List<String> readFile(File file) {
         List<String> lines = new ArrayList<>();
         try {
-            Scanner fileReader = new Scanner(file);
+            Scanner fileReader = new Scanner(file, StandardCharsets.UTF_8);
             while (fileReader.hasNextLine()) {
                 lines.add(fileReader.nextLine());
             }
@@ -108,6 +110,8 @@ public class Main {
         } catch (FileNotFoundException e) {
             log(Level.WARNING, "Main", "The provided file could not be found!");
             System.exit(1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         if (lines.size() == 0) {
             log(Level.WARNING, "Main", "The provided file is empty!");

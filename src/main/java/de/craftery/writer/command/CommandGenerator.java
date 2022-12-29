@@ -15,8 +15,7 @@ import java.util.List;
 public class CommandGenerator extends JavaFileGenerator {
     private String commandName;
     private boolean isPlayerOnly;
-    private static final String playerOnlyMessage = "§cOnly Players can execute this command!";
-    private static final String tooFewArgumentsMessage = "§cToo few arguments!";
+    private String usageMessage = "§cWrong command syntax!";
     private static final String tooManyArgumentsMessage = "§cToo many arguments!";
     @Setter
     private String cooldownMessage = "§cYou need to slow down!";
@@ -52,7 +51,7 @@ public class CommandGenerator extends JavaFileGenerator {
         // player only check
         if (isPlayerOnly) {
             commandSection.addLine("if (!(sender instanceof Player)) {");
-            commandSection.addLine("    sender.sendMessage(\""+ playerOnlyMessage +"\");");
+            commandSection.addLine("    sender.sendMessage(\""+ usageMessage +"\");");
             commandSection.addLine("    return true;");
             commandSection.addLine("}");
             commandSection.addLine("Player player = (Player) sender;");
@@ -63,7 +62,7 @@ public class CommandGenerator extends JavaFileGenerator {
         // min args
         if (this.getRequiredArgumentCount() > 0) {
             commandSection.addLine("if (args.length < "+ this.getRequiredArgumentCount() +") {");
-            commandSection.addLine("    sender.sendMessage(\""+ tooFewArgumentsMessage +"\");");
+            commandSection.addLine("    sender.sendMessage(\""+ usageMessage +"\");");
             commandSection.addLine("    return true;");
             commandSection.addLine("}");
             commandSection.addLine("");
@@ -144,6 +143,10 @@ public class CommandGenerator extends JavaFileGenerator {
     public void setCooldownBypassPermission(String permission) {
         this.hasCooldownBypassPermission = true;
         this.cooldownBypassPermission = permission;
+    }
+
+    public void setUsage(String usage) {
+        this.usageMessage = "Correct usage: " + usage;
     }
 
     public void registerAlias(String alias) {

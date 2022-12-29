@@ -20,7 +20,7 @@ public class ActionParser {
             parseSendAction(parent, generator, line);
         } else if (line.test("message")) {
             line.consume();
-            parseMessageAction(parent, generator, line);
+            parseSendAction(parent, generator, line);
         } else if (line.test("set")) {
             line.consume();
             parseSetAction(parent, generator, line);
@@ -212,9 +212,18 @@ public class ActionParser {
         generator.addBodyLine("Main.deleteVariable(\"" + key + "\");");
     }
 
+    // https://skripthub.net/docs/?id=1130
     private static void parseSendAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+        // (message|send [message[s]]) %objects% [to %commandsenders%] [from %player%]
+
         String targetVariable;
         String messageComponentVariable;
+
+        if (line.test("message")) {
+            line.consume();
+        } else if (line.test("messages")) {
+            line.consume();
+        }
 
         String message;
         if (line.testString()) {
@@ -225,6 +234,12 @@ public class ActionParser {
             return;
         }
         messageComponentVariable = buildMessageComponent(generator, message);
+
+        if (line.isEmpty()) {
+            generator.setOnlyExecutableByPlayers();
+            generateSendAction(generator, "player", messageComponentVariable);
+            return;
+        }
 
         if (!line.test("to")) {
             parent.reportUnknownToken(line, line.nextToken(), 0);
@@ -241,28 +256,6 @@ public class ActionParser {
         }
 
         generateSendAction(generator, targetVariable, messageComponentVariable);
-    }
-
-    private static void parseMessageAction(StructureNode parent, CommandGenerator generator, Fragment line) {
-        String messageComponentVariable;
-
-        String message;
-        if (line.testString()) {
-            message = line.consumeDelimitedExpression();
-        } else {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
-            System.exit(1);
-            return;
-        }
-        messageComponentVariable = buildMessageComponent(generator, message);
-
-        if (!line.isEmpty()) {
-            parent.reportUnknownToken(line.getContents(), line.nextToken(), 0);
-            System.exit(1);
-        }
-
-        generator.setOnlyExecutableByPlayers();
-        generateSendAction(generator, "player", messageComponentVariable);
     }
 
     private static String replaceKnownInlineStringVariables(CommandGenerator generator, String original) {

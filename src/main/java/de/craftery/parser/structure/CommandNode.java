@@ -76,6 +76,10 @@ public class CommandNode extends StructureNode {
                 SkriptParser.entryNode(node);
                 break;
             }
+            case "usage": {
+                this.commandGenerator.setUsage(fieldValue.trim());
+                break;
+            }
             default:
                 this.reportUnknownToken(line, fieldName, 0);
                 System.exit(1);
@@ -84,6 +88,7 @@ public class CommandNode extends StructureNode {
 
     @Override
     public CommandNode initialize(Fragment line) {
+        String original = line.getContents();
         if (!line.nextToken().matches("/\\S+")) {
             Main.log(Level.WARNING, "CommandNode", "Wrong Syntax!");
             Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");
@@ -94,6 +99,7 @@ public class CommandNode extends StructureNode {
         String commandName = StringUtils.toTitleCase(next.substring(1));
         this.commandGenerator = new CommandGenerator();
         this.commandGenerator.initialize(commandName);
+        this.commandGenerator.setUsage(original.substring(0, original.length()-1));
 
         while(!line.isEmpty()) {
             //next = line.nextToken();

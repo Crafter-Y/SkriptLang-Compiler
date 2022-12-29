@@ -24,8 +24,6 @@ public class RootNode extends StructureNode {
             System.exit(1);
         }
         if (line.isEmpty()) {
-            MainGenerator.getInstance().build();
-            FormatterGenerator.getInstance().build();
             return;
         }
 

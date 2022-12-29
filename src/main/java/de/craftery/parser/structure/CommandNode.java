@@ -103,10 +103,10 @@ public class CommandNode extends StructureNode {
                 break;
             } else if (line.test("<string>")) {
                 line.consume();
-                Main.log(Level.WARNING, "CommandNode", "ignored String argument!");
+                this.commandGenerator.addArgument(new CommandArgument(false, CommandArgument.Type.STRING));
             } else if (line.test("[<text>]")) {
                 line.consume();
-                Main.log(Level.WARNING, "CommandNode", "ignored optional Text argument");
+                this.commandGenerator.addArgument(new CommandArgument(true, CommandArgument.Type.STRING));
             } else {
                 Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + next);
                 System.exit(1);

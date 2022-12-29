@@ -42,4 +42,8 @@ public class FormatterGenerator extends JavaFileGenerator {
         }
         return instance;
     }
+
+    public static boolean isInitialized() {
+        return instance != null;
+    }
 }

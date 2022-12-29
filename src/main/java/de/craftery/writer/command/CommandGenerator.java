@@ -1,5 +1,6 @@
 package de.craftery.writer.command;
 
+import de.craftery.parser.structure.CommandArgument;
 import de.craftery.parser.structure.CommandTriggerNode;
 import de.craftery.writer.core.PluginYMLGenerator;
 import de.craftery.writer.javaFile.ClassSection;
@@ -14,13 +15,17 @@ import java.util.List;
 public class CommandGenerator extends JavaFileGenerator {
     private String commandName;
     private boolean isPlayerOnly;
-    private final String playerOnlyMessage = "§cOnly Players can execute this command!";
+    private static final String playerOnlyMessage = "§cOnly Players can execute this command!";
+    private static final String tooFewArgumentsMessage = "§cToo few arguments!";
+    private static final String tooManyArgumentsMessage = "§cToo many arguments!";
     @Setter
     private String cooldownMessage = "§cYou need to slow down!";
     private boolean hasCooldownBypassPermission = false;
     private String cooldownBypassPermission = "";
     private boolean hasCooldown = false;
     private long cooldown = 0;
+
+    private final List<CommandArgument> arguments = new ArrayList<>();
 
     @Setter
     private CommandTriggerNode node;
@@ -29,6 +34,10 @@ public class CommandGenerator extends JavaFileGenerator {
     public CommandGenerator() {
         this.setPackage("command");
         this.setNeeded(true);
+    }
+
+    public void addArgument(CommandArgument argument) {
+        this.arguments.add(argument);
     }
 
     public void addBodyLine(String line) {
@@ -49,6 +58,42 @@ public class CommandGenerator extends JavaFileGenerator {
             commandSection.addLine("Player player = (Player) sender;");
             commandSection.addLine("");
             this.requireImport("org.bukkit.entity.Player");
+        }
+
+        // min args
+        if (this.getRequiredArgumentCount() > 0) {
+            commandSection.addLine("if (args.length < "+ this.getRequiredArgumentCount() +") {");
+            commandSection.addLine("    sender.sendMessage(\""+ tooFewArgumentsMessage +"\");");
+            commandSection.addLine("    return true;");
+            commandSection.addLine("}");
+            commandSection.addLine("");
+        }
+
+        // max args
+        if (this.getOptionalMaxArgumentCont() >= 0) {
+            commandSection.addLine("if (args.length > "+ this.getOptionalMaxArgumentCont() +") {");
+            commandSection.addLine("    sender.sendMessage(\""+ tooManyArgumentsMessage +"\");");
+            commandSection.addLine("    return true;");
+            commandSection.addLine("}");
+            commandSection.addLine("");
+        }
+
+        // integrate every defined argument as variable ignoring the type
+        for (int i = 0; i < arguments.size(); i++) {
+            if (i == arguments.size() - 1) {
+                commandSection.addLine("StringBuilder argumentBuilder = new StringBuilder();");
+                commandSection.addLine("for (int i = "+ i +"; i < args.length; i++) {");
+                commandSection.addLine("    argumentBuilder.append(args[i]);");
+                commandSection.addLine("    if (i != args.length) argumentBuilder.append(\" \");");
+                commandSection.addLine("}");
+                commandSection.addLine("String argument" + (i + 1) + " = argumentBuilder.toString();");
+            } else {
+                commandSection.addLine("String argument" + (i + 1) + " = args[i];");
+            }
+        }
+
+        if (arguments.size() != 0) {
+            commandSection.addLine("");
         }
 
         // command cooldown
@@ -73,6 +118,21 @@ public class CommandGenerator extends JavaFileGenerator {
 
         // return statement
         commandSection.addLine("return true;");
+    }
+
+    private int getRequiredArgumentCount() {
+        int count = 0;
+        for (CommandArgument argument : this.arguments) {
+            if (!argument.isOptional()) count++;
+        }
+        return count;
+    }
+
+    private int getOptionalMaxArgumentCont() {
+        for (CommandArgument argument : this.arguments) {
+            if (argument.isOptional()) return -1;
+        }
+        return arguments.size();
     }
 
     public void setCooldown(long cooldown) {

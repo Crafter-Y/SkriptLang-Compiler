@@ -3,6 +3,7 @@ package de.craftery.writer.javaFile;
 import de.craftery.writer.WritingSection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ImportSection extends WritingSection {
@@ -20,6 +21,7 @@ public class ImportSection extends WritingSection {
 
     @Override
     public void buildLines() {
+        Collections.sort(imports);
         for (String importName : imports) {
             this.getLines().add("import " + importName + ";");
         }

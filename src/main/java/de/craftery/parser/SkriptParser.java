@@ -4,6 +4,8 @@ import de.craftery.Fragment;
 import de.craftery.Main;
 import de.craftery.parser.structure.RootNode;
 import de.craftery.parser.structure.StructureNode;
+import de.craftery.writer.core.FormatterGenerator;
+import de.craftery.writer.core.MainGenerator;
 import lombok.Getter;
 
 import java.util.Stack;
@@ -52,6 +54,12 @@ public class SkriptParser {
     }
 
     public void finish() {
+        MainGenerator.getInstance().build();
+        if (FormatterGenerator.isInitialized()) {
+            FormatterGenerator.getInstance().build();
+        }
+
+        // this calles completing actions on each (maybe) not finished node
         structureLevel.peek().acceptLine(new Fragment(""), 0);
     }
 }

@@ -36,10 +36,36 @@ public class ActionParser {
         } else if (line.test("teleport")) {
             line.consume();
             parseTeleportAction(parent, generator, line);
+        } else if (line.test("broadcast")) {
+            line.consume();
+            parseBroadcastAction(parent, generator, line);
         } else {
             parent.reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
+    }
+
+    private static void parseBroadcastAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+        if (!line.testString()) {
+            Main.log(Level.WARNING, "ActionParser", "String expected here!");
+            parent.reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+        String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression());
+
+        if (!line.isEmpty()) {
+            parent.reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+
+        generateBroadcastAction(generator, parsedString);
+    }
+
+    private static void generateBroadcastAction(CommandGenerator generator, String broadcastMessage) {
+        String messageComponent = buildMessageComponent(generator, broadcastMessage);
+
+        generator.requireImport("org.bukkit.Bukkit");
+        generator.addBodyLine("Bukkit.broadcast(" + messageComponent + ");");
     }
 
     private static void parseTeleportAction(StructureNode parent, CommandGenerator generator, Fragment line) {
@@ -252,7 +278,7 @@ public class ActionParser {
             generator.setOnlyExecutableByPlayers();
         }
 
-        String testArgs = original.replaceAll("%arg-(\\d)%", "\" + args[$1] + \"");
+        String testArgs = original.replaceAll("%arg-(\\d)%", "\" + argument$1 + \"");
         if (!testArgs.equals(original)) {
             original = testArgs;
         }
@@ -270,6 +296,11 @@ public class ActionParser {
         String testGrey = original.replaceAll("<grey>", "§7");
         if (!testGrey.equals(original)) {
             original = testGrey;
+        }
+
+        String testAndCode = original.replaceAll("&([0-9a-fk-or])", "§$1");
+        if (!testAndCode.equals(original)) {
+            original = testAndCode;
         }
 
         String testLocationOfPlayer = original.replaceAll("%location of player%", "\" + Formatter.formatLocation(player.getLocation()) + \"");

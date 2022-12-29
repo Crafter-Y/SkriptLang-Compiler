@@ -16,7 +16,6 @@ public class CommandGenerator extends JavaFileGenerator {
     private String commandName;
     private boolean isPlayerOnly;
     private String usageMessage = "§cWrong command syntax!";
-    private static final String tooManyArgumentsMessage = "§cToo many arguments!";
     @Setter
     private String cooldownMessage = "§cYou need to slow down!";
     private boolean hasCooldownBypassPermission = false;
@@ -51,7 +50,7 @@ public class CommandGenerator extends JavaFileGenerator {
         // player only check
         if (isPlayerOnly) {
             commandSection.addLine("if (!(sender instanceof Player)) {");
-            commandSection.addLine("    sender.sendMessage(\""+ usageMessage +"\");");
+            commandSection.addLine("    sender.sendMessage(\"§cThis command is only for players!\");");
             commandSection.addLine("    return true;");
             commandSection.addLine("}");
             commandSection.addLine("Player player = (Player) sender;");
@@ -71,7 +70,7 @@ public class CommandGenerator extends JavaFileGenerator {
         // max args
         if (this.getOptionalMaxArgumentCont() >= 0) {
             commandSection.addLine("if (args.length > "+ this.getOptionalMaxArgumentCont() +") {");
-            commandSection.addLine("    sender.sendMessage(\""+ tooManyArgumentsMessage +"\");");
+            commandSection.addLine("    sender.sendMessage(\""+ usageMessage +"\");");
             commandSection.addLine("    return true;");
             commandSection.addLine("}");
             commandSection.addLine("");

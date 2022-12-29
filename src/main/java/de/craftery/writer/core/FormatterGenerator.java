@@ -8,6 +8,7 @@ public class FormatterGenerator extends JavaFileGenerator {
     private static FormatterGenerator instance;
 
     private boolean isLocationFormatterRequired = false;
+    private boolean isUnknownFormatterRequired = false;
 
     public FormatterGenerator() {
         this.setNeeded(true);
@@ -25,7 +26,19 @@ public class FormatterGenerator extends JavaFileGenerator {
         if (this.isLocationFormatterRequired) {
             RawMethodSection formatLocation = new RawMethodSection(1);
             formatLocation.setRawMethodSignature("public static String formatLocation(Location location)");
-            formatLocation.addLine("return location.toString();");
+            formatLocation.addLine("return \"x=\" + location.getX() + \", y=\" + location.getY() + \", z=\" + location.getZ()+ \", yaw=\" + location.getYaw()+ \", pitch=\" + location.getPitch()+ \", world=\" + location.getWorld().getName();");
+            classSection.addMethod(formatLocation);
+
+            this.requireImport("org.bukkit.Location");
+        }
+
+        if (this.isUnknownFormatterRequired) {
+            RawMethodSection formatLocation = new RawMethodSection(1);
+            formatLocation.setRawMethodSignature("public static String formatUnknown(Object object)");
+            formatLocation.addLine("if (object instanceof Location) {");
+            formatLocation.addLine("    return formatLocation((Location) object);");
+            formatLocation.addLine("}");
+            formatLocation.addLine("return object.toString();");
             classSection.addMethod(formatLocation);
 
             this.requireImport("org.bukkit.Location");
@@ -34,6 +47,10 @@ public class FormatterGenerator extends JavaFileGenerator {
 
     public void requireLocationFormatter() {
         this.isLocationFormatterRequired = true;
+    }
+    public void requireUnknownFormatter() {
+        this.isLocationFormatterRequired = true;
+        this.isUnknownFormatterRequired = true;
     }
 
     public static FormatterGenerator getInstance() {

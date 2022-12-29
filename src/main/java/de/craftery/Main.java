@@ -10,11 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class Main {
     @Getter
     private static final ProjectGenerator projectGenerator = new ProjectGenerator();
+    private static int moduleInt = ThreadLocalRandom.current().nextInt(100, 500);
     public static void main(String[] args) {
         if (args.length == 0) {
             log(Level.WARNING, "Main", "Input folder not provided!");
@@ -118,5 +120,10 @@ public class Main {
             System.exit(1);
         }
         return lines;
+    }
+
+    public static int nextModuleInt() {
+        moduleInt++;
+        return moduleInt;
     }
 }

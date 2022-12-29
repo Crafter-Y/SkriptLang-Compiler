@@ -30,7 +30,6 @@ public class SkriptParser {
     private final Stack<StructureNode> structureLevel = new Stack<>();
     public void acceptLine(String line, int lineNumber) {
         if (line.trim().equals("")) {
-            Main.log(Level.INFO, "SkriptParser", "Skipping Line " + lineNumber + " :'" + line + "'");
             return;
         }
         Main.log(Level.SEVERE, "SkriptParser", "Parsing Line " + lineNumber + " :'" + line + "'");

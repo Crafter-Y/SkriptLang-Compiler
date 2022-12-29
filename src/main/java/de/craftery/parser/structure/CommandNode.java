@@ -102,9 +102,6 @@ public class CommandNode extends StructureNode {
         this.commandGenerator.setUsage(original.substring(0, original.length()-1));
 
         while(!line.isEmpty()) {
-            //next = line.nextToken();
-            //line.consume();
-
             if (line.test(":")) {
                 break;
             } else if (line.test("<string>")) {
@@ -113,8 +110,11 @@ public class CommandNode extends StructureNode {
             } else if (line.test("[<text>]")) {
                 line.consume();
                 this.commandGenerator.addArgument(new CommandArgument(true, CommandArgument.Type.STRING));
+            } else if (line.test("[<offline player>]")) {
+                line.consume();
+                this.commandGenerator.addArgument(new CommandArgument(true, CommandArgument.Type.OFFLINE_PLAYER));
             } else {
-                Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + next);
+                Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + line.nextToken());
                 System.exit(1);
             }
 

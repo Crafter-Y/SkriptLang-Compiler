@@ -10,6 +10,7 @@ public class CommandArgument {
     private Type type;
 
     public enum Type {
-        STRING
+        STRING,
+        OFFLINE_PLAYER
     }
 }

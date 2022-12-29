@@ -31,6 +31,10 @@ public class RootNode extends StructureNode {
             line.consume();
             CommandNode node = new CommandNode().initialize(line);
             SkriptParser.entryNode(node);
+        } else if (line.test("options")) {
+            line.consume();
+            OptionsNode node = new OptionsNode().initialize(line);
+            SkriptParser.entryNode(node);
         } else {
             reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);

@@ -20,7 +20,7 @@ public class CommandTriggerNode extends StructureNode {
     @Override
     public void acceptLine(Fragment line, int indentation) {
         if (indentation < this.getMaxIndentation()) {
-            while (this.getMaxIndentation() > 2) {
+            while (this.getMaxIndentation() > indentation && this.getMaxIndentation() > 2) {
                 this.setMaxIndentation(this.getMaxIndentation() - 1);
                 generator.addBodyLine("}");
             }

@@ -87,7 +87,7 @@ public class CommandGenerator extends JavaFileGenerator {
                 commandSection.addLine("}");
                 commandSection.addLine("String argument" + (i + 1) + " = argumentBuilder.toString();");
             } else {
-                commandSection.addLine("String argument" + (i + 1) + " = args[i];");
+                commandSection.addLine("String argument" + (i + 1) + " = args[" + i + "];");
             }
         }
 

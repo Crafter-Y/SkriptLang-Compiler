@@ -9,6 +9,8 @@ import de.craftery.writer.core.MainGenerator;
 import org.bukkit.Material;
 
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ActionParser {
     public static void acceptLine(StructureNode parent, CommandGenerator generator, Fragment line) {
@@ -29,8 +31,11 @@ public class ActionParser {
             parseClearAction(parent, generator, line);
         } else if (line.test("if")) {
             line.consume();
-            parseIfCondition(parent, generator, line);
-        } else if (line.test("else")) {
+            parseIfCondition(parent, generator, line, false);
+        } else if (line.test("else if")) {
+            line.consume();
+            parseIfCondition(parent, generator, line, true);
+        }  else if (line.test("else")) {
             line.consume();
             generateElseCondition(parent, generator, line);
         } else if (line.test("teleport")) {
@@ -51,7 +56,7 @@ public class ActionParser {
             parent.reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
-        String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression());
+        String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression(), false);
 
         if (!line.isEmpty()) {
             parent.reportUnknownToken(line, line.nextToken(), 0);
@@ -86,7 +91,7 @@ public class ActionParser {
             return;
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable);
+        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
 
         String locationVariable = "(Location) " + getVariable(generator, parsedKey);
         generator.requireImport("org.bukkit.Location");
@@ -112,12 +117,24 @@ public class ActionParser {
         parent.setMaxIndentation(parent.getMaxIndentation() + 1);
     }
 
-    private static void parseIfCondition(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private static void parseIfCondition(StructureNode parent, CommandGenerator generator, Fragment line, boolean isElseIf) {
         String condition;
         if (line.testByDelimiters('{', '}')) { // starts with variable
             String variable = line.consumeDelimitedExpression();
-            String parsedKey = replaceKnownInlineStringVariables(generator, variable);
-            condition = parseVariableFirstConditionalExpression(parent, parsedKey,generator, line);
+            String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
+            String firstPart = getVariable(generator, parsedKey);
+            condition = parseVariableFirstConditionalExpression(parent, firstPart, generator, line);
+        } else if (line.test("argument")) {
+            line.consume();
+            if (!line.testInt()) {
+                Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
+                parent.reportUnknownToken(line, line.nextToken(), 0);
+                System.exit(1);
+                return;
+            }
+            Integer argumentNumber = line.consumeInt();
+            String firstPart = "argument" + argumentNumber;
+            condition = parseVariableFirstConditionalExpression(parent, firstPart, generator, line);
         } else {
             parent.reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
@@ -133,23 +150,75 @@ public class ActionParser {
             System.exit(1);
         }
 
-        generator.addBodyLine("if (" + condition + ") {");
+        if (isElseIf) {
+            generator.addBodyLine("else if (" + condition + ") {");
+        } else {
+            generator.addBodyLine("if (" + condition + ") {");
+        }
+
         parent.setMaxIndentation(parent.getMaxIndentation() + 1);
     }
 
-    private static String parseVariableFirstConditionalExpression(StructureNode parent, String variable, CommandGenerator generator, Fragment line) {
-        StringBuilder expressionBuilder = new StringBuilder();
-
-        expressionBuilder.append(getVariable(generator, variable));
+    private static String parseVariableFirstConditionalExpression(StructureNode parent, String firstPartOfEquation, CommandGenerator generator, Fragment line) {
+        String result;
 
         if (line.test("is not set")) {
             line.consume();
-            expressionBuilder.append(" == null");
+            result = firstPartOfEquation + " == null";
+        } else if (line.test("is set")) {
+            line.consume();
+            result = firstPartOfEquation + " != null";
+        } else if (line.test("is not")) {
+            line.consume();
+            result = parseEqualityExpression(parent, generator, firstPartOfEquation, line, false);
+        } else if (line.test("is") || line.test("=")) {
+            line.consume();
+            result = parseEqualityExpression(parent, generator, firstPartOfEquation, line, true);
         } else {
             parent.reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
+            return "";
         }
-        return expressionBuilder.toString();
+        return result;
+    }
+
+    private static String parseEqualityExpression(StructureNode parent, CommandGenerator generator, String firstVariableToCompare, Fragment followingLine, boolean isEqual) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        while (!followingLine.isEmpty()) {
+            if (followingLine.test(":")) {
+                break;
+            }
+            if (followingLine.test(",") || followingLine.test("or")) {
+                followingLine.consume();
+                continue;
+            }
+
+            if (!first) {
+                result.append(" || ");
+            } else {
+                first = false;
+            }
+
+            result.append(firstVariableToCompare);
+            if (isEqual) {
+                result.append(" ==");
+            } else {
+                result.append(" !=");
+            }
+
+
+            if (followingLine.testString()) {
+                String parsedString = replaceKnownInlineStringVariables(generator, followingLine.consumeDelimitedExpression(), false);
+                result.append(" \"").append(parsedString).append("\"");
+            } else {
+                parent.reportUnknownToken(followingLine, followingLine.nextToken(), 0);
+                System.exit(1);
+            }
+
+        }
+        return result.toString();
     }
 
     private static void parseSetAction(StructureNode parent, CommandGenerator generator, Fragment line) {
@@ -158,7 +227,7 @@ public class ActionParser {
             System.exit(1);
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable);
+        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
 
         if (!line.test("to")) {
             parent.reportUnknownToken(line, line.nextToken(), 0);
@@ -170,6 +239,9 @@ public class ActionParser {
         if (line.test("location of player")) {
             generator.setOnlyExecutableByPlayers();
             value = "player.getLocation()";
+        } else if (line.testString()) {
+            String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression(), false);
+            value = "\" " + parsedString + "\"";
         } else {
             Main.log(Level.WARNING, "ActionParser", "Unknown set value: " + line.getContents());
             parent.reportUnknownToken(line, line.nextToken(), 0);
@@ -186,7 +258,7 @@ public class ActionParser {
             System.exit(1);
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable);
+        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
 
         clearVariable(generator, parsedKey);
     }
@@ -258,7 +330,7 @@ public class ActionParser {
         generateSendAction(generator, targetVariable, messageComponentVariable);
     }
 
-    private static String replaceKnownInlineStringVariables(CommandGenerator generator, String original) {
+    private static String replaceKnownInlineStringVariables(CommandGenerator generator, String original, boolean isOption) {
         String testPlayerNameReplace = original.replaceAll("%player%", "\" + player.getName() + \"");
         if (!testPlayerNameReplace.equals(original)) {
             original = testPlayerNameReplace;
@@ -271,7 +343,7 @@ public class ActionParser {
             generator.setOnlyExecutableByPlayers();
         }
 
-        String testArgs = original.replaceAll("%arg-(\\d)%", "\" + argument$1 + \"");
+        String testArgs = original.replaceAll("%arg[-\\s](\\d)%", "\" + argument$1 + \"");
         if (!testArgs.equals(original)) {
             original = testArgs;
         }
@@ -296,6 +368,17 @@ public class ActionParser {
             original = testAndCode;
         }
 
+        if (!isOption) {
+            Matcher mat = Pattern.compile("\\{@([a-zA-Z]+)}").matcher(original);
+            while (mat.find()) {
+                String target = mat.group(0);
+                String option = Options.getOption(target.substring(2, target.length() - 1));
+                String replacement = replaceKnownInlineStringVariables(generator, option, true);
+                original = original.replace(target, replacement);
+            }
+        }
+
+
         String testLocationOfPlayer = original.replaceAll("%location of player%", "\" + Formatter.formatLocation(player.getLocation()) + \"");
         if (!testLocationOfPlayer.equals(original)) {
             original = testLocationOfPlayer;
@@ -310,7 +393,7 @@ public class ActionParser {
     private static String buildMessageComponent(CommandGenerator generator, String original) {
         generator.requireImport("net.kyori.adventure.text.Component");
 
-        original = replaceKnownInlineStringVariables(generator, original);
+        original = replaceKnownInlineStringVariables(generator, original, false);
 
         return "Component.text(\"" + original + "\")";
     }
@@ -354,6 +437,17 @@ public class ActionParser {
             generator.setOnlyExecutableByPlayers();
             fragment.consume();
             return "player";
+        } else if (fragment.test("argument")) {
+            fragment.consume();
+            if (!fragment.testInt()) {
+                Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
+                parent.reportUnknownToken(fragment, fragment.nextToken(), 0);
+                System.exit(1);
+                return "";
+            }
+            Integer argumentNumber = fragment.consumeInt();
+            generator.requireImport("org.bukkit.Bukkit");
+            return "Bukkit.getPlayer(argument"+ argumentNumber +")";
         } else {
             parent.reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);

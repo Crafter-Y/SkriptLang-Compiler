@@ -3,7 +3,8 @@ package de.craftery.parser.structure;
 import de.craftery.Fragment;
 import de.craftery.Main;
 import de.craftery.parser.SkriptParser;
-import de.craftery.writer.core.FormatterGenerator;
+import de.craftery.parser.structure.events.ItemEnchantEventNode;
+import de.craftery.writer.actions.events.ItemEnchantGenerator;
 import de.craftery.writer.core.MainGenerator;
 import de.craftery.writer.core.PluginYMLGenerator;
 import de.craftery.writer.pom.PomGenerator;
@@ -30,6 +31,19 @@ public class RootNode extends StructureNode {
         if (line.test("command")) {
             line.consume();
             CommandNode node = new CommandNode().initialize(line);
+            SkriptParser.entryNode(node);
+        } else if (line.test("enchant") ||
+                line.test("on enchant") ||
+                line.test("item enchant") ||
+                line.test("on item enchant")
+        ) {
+            // https://skripthub.net/docs/?id=4261
+            //Syntax: [on] [item] enchant
+            line.consume();
+            ItemEnchantGenerator generator = new ItemEnchantGenerator();
+            ItemEnchantEventNode node = new ItemEnchantEventNode();
+            node.setGenerator(generator);
+            generator.setNode(node);
             SkriptParser.entryNode(node);
         } else if (line.test("options")) {
             line.consume();

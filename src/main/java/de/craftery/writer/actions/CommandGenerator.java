@@ -1,6 +1,5 @@
 package de.craftery.writer.actions;
 
-import de.craftery.Main;
 import de.craftery.parser.structure.CommandArgument;
 import de.craftery.writer.core.PluginYMLGenerator;
 import de.craftery.writer.javaFile.ClassSection;
@@ -10,7 +9,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class CommandGenerator extends ActionGenerator {
     private String commandName;

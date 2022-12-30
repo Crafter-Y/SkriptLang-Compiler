@@ -47,10 +47,34 @@ public class ActionParser {
         } else if (line.test("broadcast")) {
             line.consume();
             parseBroadcastAction(line);
+        } else if (line.test("stop")) {
+            line.consume();
+            parseStopAction(line);
+        } else if (line.test("cancel event")) {
+            line.consume();
+            parseCancelEventAction(line);
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
+    }
+
+    private void parseCancelEventAction(Fragment line) {
+        if (!line.isEmpty()) {
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+
+        this.generator.addBodyLine("event.setCancelled(true);");
+    }
+
+    private void parseStopAction(Fragment line) {
+        if (!line.isEmpty()) {
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+
+        this.generator.addBodyLine("return;");
     }
 
     private void parseBroadcastAction(Fragment line) {
@@ -138,6 +162,10 @@ public class ActionParser {
             Integer argumentNumber = line.consumeInt();
             String firstPart = "argument" + argumentNumber;
             condition = parseVariableFirstConditionalExpression(firstPart, line);
+        } else if(line.test("player is op")) {
+            line.consume();
+            this.generator.setOnlyExecutableByPlayers();
+            condition = "player.isOp()";
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);

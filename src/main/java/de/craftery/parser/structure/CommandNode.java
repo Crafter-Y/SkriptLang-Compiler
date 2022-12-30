@@ -5,7 +5,7 @@ import de.craftery.Main;
 import de.craftery.StringUtils;
 import de.craftery.TimeUtils;
 import de.craftery.parser.SkriptParser;
-import de.craftery.writer.command.CommandGenerator;
+import de.craftery.writer.actions.CommandGenerator;
 
 import java.util.logging.Level;
 
@@ -54,11 +54,11 @@ public class CommandNode extends StructureNode {
                 break;
             }
             case "description": {
-                commandGenerator.setDescription(fieldValue.trim());
+                commandGenerator.setCommandDescription(fieldValue.trim());
                 break;
             }
             case "cooldown": {
-                commandGenerator.setCooldown(TimeUtils.parseTime(fieldValue.trim()));
+                commandGenerator.setCommandCooldown(TimeUtils.parseTime(fieldValue.trim()));
                 break;
             }
             case "cooldown message": {

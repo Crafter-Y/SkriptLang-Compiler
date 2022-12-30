@@ -2,8 +2,7 @@ package de.craftery.parser.helper;
 
 import de.craftery.Fragment;
 import de.craftery.Main;
-import de.craftery.parser.structure.StructureNode;
-import de.craftery.writer.command.CommandGenerator;
+import de.craftery.writer.actions.ActionGenerator;
 import de.craftery.writer.core.FormatterGenerator;
 import de.craftery.writer.core.MainGenerator;
 import org.bukkit.Material;
@@ -13,72 +12,76 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ActionParser {
-    public static void acceptLine(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private final ActionGenerator generator;
+    public ActionParser(ActionGenerator generator) {
+        this.generator = generator;
+    }
+    public void acceptLine(Fragment line) {
         if (line.test("give")) {
             line.consume();
-            parseGiveAction(parent, generator, line);
+            parseGiveAction(line);
         } else if (line.test("send")) {
             line.consume();
-            parseSendAction(parent, generator, line);
+            parseSendAction(line);
         } else if (line.test("message")) {
             line.consume();
-            parseSendAction(parent, generator, line);
+            parseSendAction(line);
         } else if (line.test("set")) {
             line.consume();
-            parseSetAction(parent, generator, line);
+            parseSetAction(line);
         } else if (line.test("clear")) {
             line.consume();
-            parseClearAction(parent, generator, line);
+            parseClearAction(line);
         } else if (line.test("if")) {
             line.consume();
-            parseIfCondition(parent, generator, line, false);
+            parseIfCondition(line, false);
         } else if (line.test("else if")) {
             line.consume();
-            parseIfCondition(parent, generator, line, true);
+            parseIfCondition(line, true);
         }  else if (line.test("else")) {
             line.consume();
-            generateElseCondition(parent, generator, line);
+            generateElseCondition(line);
         } else if (line.test("teleport")) {
             line.consume();
-            parseTeleportAction(parent, generator, line);
+            parseTeleportAction(line);
         } else if (line.test("broadcast")) {
             line.consume();
-            parseBroadcastAction(parent, generator, line);
+            parseBroadcastAction(line);
         } else {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
     }
 
-    private static void parseBroadcastAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private void parseBroadcastAction(Fragment line) {
         if (!line.testString()) {
             Main.log(Level.WARNING, "ActionParser", "String expected here!");
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
-        String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression(), false);
+        String parsedString = replaceKnownInlineStringVariables(line.consumeDelimitedExpression(), false);
 
         if (!line.isEmpty()) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
 
-        generateBroadcastAction(generator, parsedString);
+        generateBroadcastAction(parsedString);
     }
 
-    private static void generateBroadcastAction(CommandGenerator generator, String broadcastMessage) {
-        String messageComponent = buildMessageComponent(generator, broadcastMessage);
+    private void generateBroadcastAction(String broadcastMessage) {
+        String messageComponent = buildMessageComponent(broadcastMessage);
 
-        generator.requireImport("org.bukkit.Bukkit");
-        generator.addBodyLine("Bukkit.broadcast(" + messageComponent + ");");
+        this.generator.requireImport("org.bukkit.Bukkit");
+        this.generator.addBodyLine("Bukkit.broadcast(" + messageComponent + ");");
     }
 
-    private static void parseTeleportAction(StructureNode parent, CommandGenerator generator, Fragment line) {
-        String targetVariable = parseTargetVariable(generator, parent, line);
+    private void parseTeleportAction(Fragment line) {
+        String targetVariable = parseTargetVariable(line);
 
         if (!line.test("to")) {
             Main.log(Level.WARNING, "ActionParser", "Expected 'to' here");
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
@@ -86,57 +89,57 @@ public class ActionParser {
 
         if (!line.testByDelimiters('{', '}')) { // starts with variable
             Main.log(Level.WARNING, "ActionParser", "Expected a variable here");
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
+        String parsedKey = replaceKnownInlineStringVariables(variable, false);
 
-        String locationVariable = "(Location) " + getVariable(generator, parsedKey);
-        generator.requireImport("org.bukkit.Location");
+        String locationVariable = "(Location) " + getVariable(parsedKey);
+        this.generator.requireImport("org.bukkit.Location");
 
-        generateTeleportAction(generator, targetVariable, locationVariable);
+        generateTeleportAction(targetVariable, locationVariable);
     }
 
-    private static void generateTeleportAction(CommandGenerator generator, String targetVariable, String locationVariable) {
-        generator.addBodyLine(targetVariable + ".teleport(" + locationVariable + ");");
+    private void generateTeleportAction(String targetVariable, String locationVariable) {
+        this.generator.addBodyLine(targetVariable + ".teleport(" + locationVariable + ");");
     }
 
-    private static void generateElseCondition(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private void generateElseCondition(Fragment line) {
         if (line.test(":")) {
             line.consume();
         }
 
         if (!line.isEmpty()) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
 
-        generator.addBodyLine("else {");
-        parent.setMaxIndentation(parent.getMaxIndentation() + 1);
+        this.generator.addBodyLine("else {");
+        this.generator.getNode().setMaxIndentation(this.generator.getNode().getMaxIndentation() + 1);
     }
 
-    private static void parseIfCondition(StructureNode parent, CommandGenerator generator, Fragment line, boolean isElseIf) {
+    private void parseIfCondition(Fragment line, boolean isElseIf) {
         String condition;
         if (line.testByDelimiters('{', '}')) { // starts with variable
             String variable = line.consumeDelimitedExpression();
-            String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
-            String firstPart = getVariable(generator, parsedKey);
-            condition = parseVariableFirstConditionalExpression(parent, firstPart, generator, line);
+            String parsedKey = replaceKnownInlineStringVariables(variable, false);
+            String firstPart = getVariable(parsedKey);
+            condition = parseVariableFirstConditionalExpression(firstPart, line);
         } else if (line.test("argument")) {
             line.consume();
             if (!line.testInt()) {
                 Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
-                parent.reportUnknownToken(line, line.nextToken(), 0);
+                this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
                 System.exit(1);
                 return;
             }
             Integer argumentNumber = line.consumeInt();
             String firstPart = "argument" + argumentNumber;
-            condition = parseVariableFirstConditionalExpression(parent, firstPart, generator, line);
+            condition = parseVariableFirstConditionalExpression(firstPart, line);
         } else {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
@@ -146,20 +149,20 @@ public class ActionParser {
         }
 
         if (!line.isEmpty()) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
 
         if (isElseIf) {
-            generator.addBodyLine("else if (" + condition + ") {");
+            this.generator.addBodyLine("else if (" + condition + ") {");
         } else {
-            generator.addBodyLine("if (" + condition + ") {");
+            this.generator.addBodyLine("if (" + condition + ") {");
         }
 
-        parent.setMaxIndentation(parent.getMaxIndentation() + 1);
+        this.generator.getNode().setMaxIndentation(this.generator.getNode().getMaxIndentation() + 1);
     }
 
-    private static String parseVariableFirstConditionalExpression(StructureNode parent, String firstPartOfEquation, CommandGenerator generator, Fragment line) {
+    private String parseVariableFirstConditionalExpression(String firstPartOfEquation, Fragment line) {
         String result;
 
         if (line.test("is not set")) {
@@ -170,19 +173,19 @@ public class ActionParser {
             result = firstPartOfEquation + " != null";
         } else if (line.test("is not")) {
             line.consume();
-            result = parseEqualityExpression(parent, generator, firstPartOfEquation, line, false);
+            result = parseEqualityExpression(firstPartOfEquation, line, false);
         } else if (line.test("is") || line.test("=")) {
             line.consume();
-            result = parseEqualityExpression(parent, generator, firstPartOfEquation, line, true);
+            result = parseEqualityExpression(firstPartOfEquation, line, true);
         } else {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return "";
         }
         return result;
     }
 
-    private static String parseEqualityExpression(StructureNode parent, CommandGenerator generator, String firstVariableToCompare, Fragment followingLine, boolean isEqual) {
+    private String parseEqualityExpression(String firstVariableToCompare, Fragment followingLine, boolean isEqual) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -210,10 +213,10 @@ public class ActionParser {
 
 
             if (followingLine.testString()) {
-                String parsedString = replaceKnownInlineStringVariables(generator, followingLine.consumeDelimitedExpression(), false);
+                String parsedString = replaceKnownInlineStringVariables(followingLine.consumeDelimitedExpression(), false);
                 result.append(" \"").append(parsedString).append("\"");
             } else {
-                parent.reportUnknownToken(followingLine, followingLine.nextToken(), 0);
+                this.generator.getNode().reportUnknownToken(followingLine, followingLine.nextToken(), 0);
                 System.exit(1);
             }
 
@@ -221,74 +224,74 @@ public class ActionParser {
         return result.toString();
     }
 
-    private static void parseSetAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private void parseSetAction(Fragment line) {
         if (!line.testByDelimiters('{', '}')) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
+        String parsedKey = replaceKnownInlineStringVariables(variable, false);
 
         if (!line.test("to")) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
         line.consume();
 
         String value;
         if (line.test("location of player")) {
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
             value = "player.getLocation()";
         } else if (line.test("location of block at location of player")) {
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
             value = "player.getLocation().getBlock().getLocation()";
         } else if (line.testString()) {
-            String parsedString = replaceKnownInlineStringVariables(generator, line.consumeDelimitedExpression(), false);
+            String parsedString = replaceKnownInlineStringVariables(line.consumeDelimitedExpression(), false);
             value = "\" " + parsedString + "\"";
         } else {
             Main.log(Level.WARNING, "ActionParser", "Unknown set value: " + line.getContents());
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
 
-        assignVariable(generator, parsedKey, value);
+        assignVariable(parsedKey, value);
     }
 
-    private static void parseClearAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private void parseClearAction(Fragment line) {
         if (!line.testByDelimiters('{', '}')) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
         String variable = line.consumeDelimitedExpression();
-        String parsedKey = replaceKnownInlineStringVariables(generator, variable, false);
+        String parsedKey = replaceKnownInlineStringVariables(variable, false);
 
-        clearVariable(generator, parsedKey);
+        clearVariable(parsedKey);
     }
 
-    private static String getVariable(CommandGenerator generator, String key) {
+    private String getVariable(String key) {
         MainGenerator.getInstance().requireVariableStore();
-        generator.requireImport("de.craftery.autogenerated.Main");
+        this.generator.requireImport("de.craftery.autogenerated.Main");
 
         return "Main.getVariable(\"" + key + "\")";
     }
 
-    private static void assignVariable(CommandGenerator generator, String key, String objectVariable) {
+    private void assignVariable(String key, String objectVariable) {
         MainGenerator.getInstance().requireVariableStore();
-        generator.requireImport("de.craftery.autogenerated.Main");
+        this.generator.requireImport("de.craftery.autogenerated.Main");
 
-        generator.addBodyLine("Main.setVariable(\"" + key + "\", " + objectVariable + ");");
+        this.generator.addBodyLine("Main.setVariable(\"" + key + "\", " + objectVariable + ");");
     }
 
-    private static void clearVariable(CommandGenerator generator, String key) {
+    private void clearVariable(String key) {
         MainGenerator.getInstance().requireVariableStore();
-        generator.requireImport("de.craftery.autogenerated.Main");
+        this.generator.requireImport("de.craftery.autogenerated.Main");
 
-        generator.addBodyLine("Main.deleteVariable(\"" + key + "\");");
+        this.generator.addBodyLine("Main.deleteVariable(\"" + key + "\");");
     }
 
     // https://skripthub.net/docs/?id=1130
-    private static void parseSendAction(StructureNode parent, CommandGenerator generator, Fragment line) {
+    private void parseSendAction(Fragment line) {
         // (message|send [message[s]]) %objects% [to %commandsenders%] [from %player%]
 
         String targetVariable;
@@ -304,46 +307,46 @@ public class ActionParser {
         if (line.testString()) {
             message = line.consumeDelimitedExpression();
         } else {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
-        messageComponentVariable = buildMessageComponent(generator, message);
+        messageComponentVariable = buildMessageComponent(message);
 
         if (line.isEmpty()) {
-            generator.setOnlyExecutableByPlayers();
-            generateSendAction(generator, "player", messageComponentVariable);
+            this.generator.setOnlyExecutableByPlayers();
+            generateSendAction("player", messageComponentVariable);
             return;
         }
 
         if (!line.test("to")) {
-            parent.reportUnknownToken(line, line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
         line.consume();
 
-        targetVariable = parseTargetVariable(generator, parent, line);
+        targetVariable = parseTargetVariable(line);
 
         if (!line.isEmpty()) {
-            parent.reportUnknownToken(line.getContents(), line.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(line.getContents(), line.nextToken(), 0);
             System.exit(1);
         }
 
-        generateSendAction(generator, targetVariable, messageComponentVariable);
+        generateSendAction(targetVariable, messageComponentVariable);
     }
 
-    private static String replaceKnownInlineStringVariables(CommandGenerator generator, String original, boolean isOption) {
+    private String replaceKnownInlineStringVariables(String original, boolean isOption) {
         String testPlayerNameReplace = original.replaceAll("%player%", "\" + player.getName() + \"");
         if (!testPlayerNameReplace.equals(original)) {
             original = testPlayerNameReplace;
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
         }
 
         String testPlayerUuid = original.replaceAll("%uuid of player%", "\" + player.getUniqueId().toString() + \"");
         if (!testPlayerUuid.equals(original)) {
             original = testPlayerUuid;
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
         }
 
         String testArgs = original.replaceAll("%arg[-\\s](\\d)%", "\" + argument$1 + \"");
@@ -376,7 +379,7 @@ public class ActionParser {
             while (mat.find()) {
                 String target = mat.group(0);
                 String option = Options.getOption(target.substring(2, target.length() - 1));
-                String replacement = replaceKnownInlineStringVariables(generator, option, true);
+                String replacement = replaceKnownInlineStringVariables(option, true);
                 original = original.replace(target, replacement);
             }
         }
@@ -385,94 +388,94 @@ public class ActionParser {
         if (!testVariableInject.equals(original)) {
             MainGenerator.getInstance().requireVariableStore();
             FormatterGenerator.getInstance().requireUnknownFormatter();
-            generator.requireImport("de.craftery.autogenerated.Formatter");
+            this.generator.requireImport("de.craftery.autogenerated.Formatter");
             original = testVariableInject;
         }
 
         String testLocationOfPlayer = original.replaceAll("%location of player%", "\" + Formatter.formatLocation(player.getLocation()) + \"");
         if (!testLocationOfPlayer.equals(original)) {
             original = testLocationOfPlayer;
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
             FormatterGenerator.getInstance().requireLocationFormatter();
-            generator.requireImport("de.craftery.autogenerated.Formatter");
+            this.generator.requireImport("de.craftery.autogenerated.Formatter");
         }
 
         return original;
     }
 
-    private static String buildMessageComponent(CommandGenerator generator, String original) {
-        generator.requireImport("net.kyori.adventure.text.Component");
+    private String buildMessageComponent(String original) {
+        this.generator.requireImport("net.kyori.adventure.text.Component");
 
-        original = replaceKnownInlineStringVariables(generator, original, false);
+        original = replaceKnownInlineStringVariables(original, false);
 
         return "Component.text(\"" + original + "\")";
     }
 
-    private static void generateSendAction(CommandGenerator generator, String targetVariable, String messageComponentVariable) {
-        generator.addBodyLine(targetVariable + ".sendMessage(" + messageComponentVariable + ");");
+    private void generateSendAction(String targetVariable, String messageComponentVariable) {
+        this.generator.addBodyLine(targetVariable + ".sendMessage(" + messageComponentVariable + ");");
     }
 
-    private static void parseGiveAction(StructureNode parent, CommandGenerator generator, Fragment fragment) {
+    private void parseGiveAction(Fragment fragment) {
         String playerVariableName;
         String itemStackVariableName;
         int amount;
 
-        playerVariableName = parseTargetVariable(generator, parent, fragment);
+        playerVariableName = parseTargetVariable(fragment);
 
         if (fragment.testInt()) {
             amount = fragment.consumeInt();
         } else {
-            parent.reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);
             return;
         }
 
         Material material = fragment.parseItem();
         if (material == null) {
-            parent.reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);
         }
         if (!fragment.isEmpty()) {
-            parent.reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);
         }
 
         itemStackVariableName = createItemStack(material, amount);
 
-        generateGiveAction(generator, playerVariableName, itemStackVariableName);
+        generateGiveAction(playerVariableName, itemStackVariableName);
     }
 
-    private static String parseTargetVariable(CommandGenerator generator, StructureNode parent, Fragment fragment) {
+    private String parseTargetVariable(Fragment fragment) {
         if (fragment.test("player")) {
-            generator.setOnlyExecutableByPlayers();
+            this.generator.setOnlyExecutableByPlayers();
             fragment.consume();
             return "player";
         } else if (fragment.test("argument")) {
             fragment.consume();
             if (!fragment.testInt()) {
                 Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
-                parent.reportUnknownToken(fragment, fragment.nextToken(), 0);
+                this.generator.getNode().reportUnknownToken(fragment, fragment.nextToken(), 0);
                 System.exit(1);
                 return "";
             }
             Integer argumentNumber = fragment.consumeInt();
-            generator.requireImport("org.bukkit.Bukkit");
+            this.generator.requireImport("org.bukkit.Bukkit");
             return "Bukkit.getPlayer(argument"+ argumentNumber +")";
         } else {
-            parent.reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
+            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);
             return null;
         }
     }
 
-    private static String createItemStack(Material material, int amount) {
+    private String createItemStack(Material material, int amount) {
         return "new ItemStack(Material." + material.name() + ", " + amount + ")";
     }
 
-    private static void generateGiveAction(CommandGenerator generator, String playerVariableName, String itemStackVariableName) {
-        generator.requireImport("org.bukkit.inventory.ItemStack");
-        generator.requireImport("org.bukkit.Material");
+    private void generateGiveAction(String playerVariableName, String itemStackVariableName) {
+        this.generator.requireImport("org.bukkit.inventory.ItemStack");
+        this.generator.requireImport("org.bukkit.Material");
 
-        generator.addBodyLine(playerVariableName + ".getInventory().addItem(" + itemStackVariableName + ");");
+        this.generator.addBodyLine(playerVariableName + ".getInventory().addItem(" + itemStackVariableName + ");");
     }
 }

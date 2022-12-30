@@ -31,6 +31,7 @@ public class ActionNode extends StructureNode {
         }
 
         if (indentation == 0) {
+            SkriptParser.exitNode().acceptLine(line, indentation);
             this.generator.build();
             return;
         }

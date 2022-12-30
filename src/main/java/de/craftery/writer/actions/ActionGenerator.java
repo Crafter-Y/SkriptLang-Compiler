@@ -44,6 +44,7 @@ public abstract class ActionGenerator extends JavaFileGenerator {
     protected abstract RawMethodSection getBodySection();
     public enum Type {
         COMMAND,
-        ENCHANT_EVENT
+        ENCHANT_EVENT,
+        PREPARE_ENCHANT_EVENT
     }
 }

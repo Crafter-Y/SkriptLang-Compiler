@@ -19,7 +19,6 @@ public class CommandNode extends StructureNode {
         }
         if (indentation == 0) {
             SkriptParser.exitNode().acceptLine(line, indentation);
-            commandGenerator.build();
             return;
         }
         String fieldName = line.getContents().split(":")[0];

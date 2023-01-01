@@ -1,9 +1,11 @@
 package de.craftery;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Material;
 
 public class Fragment {
+    @Setter
     @Getter
     private String contents;
 
@@ -15,6 +17,16 @@ public class Fragment {
 
     public boolean test(String tester) {
         if (this.contents.startsWith(tester + " ") || this.contents.equals(tester) || this.contents.startsWith(tester + ":")) {
+            this.testLength = tester.length();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean testIgnoreCase(String tester) {
+        if (this.contents.toLowerCase().startsWith(tester.toLowerCase() + " ") ||
+                this.contents.equalsIgnoreCase(tester) ||
+                this.contents.toLowerCase().startsWith(tester.toLowerCase() + ":")) {
             this.testLength = tester.length();
             return true;
         }
@@ -60,6 +72,14 @@ public class Fragment {
         return false;
     }
 
+    public boolean testExact(String tester) {
+        if (this.contents.startsWith(tester)) {
+            this.testLength = tester.length();
+            return true;
+        }
+        return false;
+    }
+
     public String consume() {
         String removed = this.contents.substring(0, this.testLength);
         this.contents = this.contents.substring(this.testLength);
@@ -81,6 +101,12 @@ public class Fragment {
         return removed;
     }
 
+    public String consumeExact() {
+        String removed = this.contents.substring(0, this.testLength);
+        this.contents = this.contents.substring(this.testLength);
+        return removed;
+    }
+
     public String nextToken() {
         String nextToken = this.contents.split(" ")[0];
         this.testLength = nextToken.length();
@@ -95,14 +121,22 @@ public class Fragment {
     }
 
     public Material parseItem() {
-        if (this.isEmpty()) return null;
+        return parseItem(this);
+    }
+
+    public static Material parseItem(String line) {
+        return parseItem(new Fragment(line));
+    }
+
+    public static Material parseItem(Fragment line) {
+        if (line.isEmpty()) return null;
         for (Material material : Material.values()) {
-            if (this.test(material.name().replace("_", " ").toLowerCase())) {
-                this.consume();
+            if (line.testIgnoreCase(material.name().replace("_", " ").toLowerCase())) {
+                line.consume();
                 return material;
             }
-            if (this.test(material.name().replace("_", " ").toLowerCase() + "s")) {
-                this.consume();
+            if (line.testIgnoreCase(material.name().replace("_", " ").toLowerCase() + "s")) {
+                line.consume();
                 return material;
             }
         }

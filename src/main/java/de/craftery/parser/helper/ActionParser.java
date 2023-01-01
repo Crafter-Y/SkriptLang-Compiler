@@ -20,10 +20,7 @@ public class ActionParser {
         if (line.test("give")) {
             line.consume();
             parseGiveAction(line);
-        } else if (line.test("send")) {
-            line.consume();
-            parseSendAction(line);
-        } else if (line.test("message")) {
+        } else if (line.test("send") || line.test("message")) {
             line.consume();
             parseSendAction(line);
         } else if (line.test("set")) {
@@ -53,10 +50,88 @@ public class ActionParser {
         } else if (line.test("cancel event")) {
             line.consume();
             parseCancelEventAction(line);
+        } else if (line.test("execute")) {
+            line.consume();
+            parseExecuteAction(line);
+        } else if (line.test("remove")) {
+            line.consume();
+            parseRemoveAction(line);
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
+    }
+
+    // https://skripthub.net/docs/?id=1134
+    private void parseRemoveAction(Fragment line) {
+        // remove (all|every) %objects% from %objects%
+        // (remove|subtract) %objects% from %objects%
+        int moduleInt = Main.nextModuleInt();
+        String conditionIfItemStack = parseComparisonBetweenVariableAndItemProperties("item" + moduleInt, line);
+
+        if (!line.test("from")) {
+            Main.log(Level.WARNING, "ActionParser", "Expected 'from' after 'remove' action");
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+        line.consume();
+
+        String targetPlayer = parseTargetVariable(line);
+
+        this.generator.requireImport("org.bukkit.inventory.ItemStack");
+
+        this.generator.addBodyLine("for (ItemStack item"+ moduleInt +" : "+ targetPlayer +".getInventory().getContents()) {");
+        this.generator.addBodyLine("    if ("+ conditionIfItemStack +") {");
+        this.generator.addBodyLine("        "+ targetPlayer +".getInventory().removeItem(item"+ moduleInt +");");
+        this.generator.addBodyLine("    }");
+        this.generator.addBodyLine("}");
+
+        if (!line.isEmpty()) {
+            Main.log(Level.WARNING, "ActionParser", "Expected end of line after 'remove' action");
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+    }
+
+    // https://skripthub.net/docs/?id=1129
+    private void parseExecuteAction(Fragment line) {
+        // [execute] [the] command %strings% [by %commandsenders%]
+        // [execute] [the] %commandsenders% command %strings%
+        // (let|make) %commandsenders% execute [[the] command] %strings%
+
+        boolean isConsoleSender = false;
+
+        if (line.test("the")) {
+            line.consume();
+        }
+
+        if (line.test("console")) {
+            line.consume();
+            isConsoleSender = true;
+        }
+
+        if (!line.test("command")) {
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+        line.consume();
+
+        if (!line.testString()) {
+            Main.log(Level.WARNING,"ActionParser", "Expected string after command");
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+        }
+        String command = line.consumeDelimitedExpression();
+        String parsed = replaceKnownInlineStringVariables(command, false);
+
+        this.generator.requireImport("org.bukkit.Bukkit");
+        if (isConsoleSender) {
+            this.generator.addBodyLine("Bukkit.dispatchCommand(Bukkit.getConsoleSender(), \"" + parsed + "\");");
+        } else {
+            generator.setOnlyExecutableByPlayers();
+            this.generator.addBodyLine("Bukkit.dispatchCommand(player, \"" + parsed + "\");");
+        }
+
     }
 
     private void parseCancelEventAction(Fragment line) {
@@ -162,10 +237,14 @@ public class ActionParser {
             Integer argumentNumber = line.consumeInt();
             String firstPart = "argument" + argumentNumber;
             condition = parseVariableFirstConditionalExpression(firstPart, line);
-        } else if(line.test("player is op")) {
+        } else if (line.test("player is op")) {
             line.consume();
             this.generator.setOnlyExecutableByPlayers();
             condition = "player.isOp()";
+        } else if (line.test("player is holding")) {
+            line.consume();
+            this.generator.setOnlyExecutableByPlayers();
+            condition = parsePlayerIsHoldingCondition(line);
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
@@ -188,6 +267,109 @@ public class ActionParser {
         }
 
         this.generator.getNode().setMaxIndentation(this.generator.getNode().getMaxIndentation() + 1);
+    }
+
+    private String parsePlayerIsHoldingCondition(Fragment line) {
+        //int moduleInt = Main.nextModuleInt();
+        //String moduleVariable = "itemStack" + moduleInt;
+        //this.generator.addBodyLine("ItemStack " + moduleVariable + " = player.getInventory().getItemInMainHand();");
+        //this.generator.requireImport("org.bukkit.inventory.ItemStack");
+        return parseComparisonBetweenVariableAndItemProperties("player.getInventory().getItemInMainHand()", line);
+    }
+
+    private String parseComparisonBetweenVariableAndItemProperties(String itemStackVariableName, Fragment line) {
+        //     if player is holding {@RType} named {@RName} with lore {@RLore}:
+        // this should outpu something like
+        // variable.getType() == Material.... && variable.getDisplayName() == ".....
+
+        StringBuilder condition = new StringBuilder();
+
+        // parse optional amount
+        if (line.testInt()) {
+            Integer amount = line.consumeInt();
+
+            if (!line.test("of")) {
+                Main.log(Level.WARNING, "ActionParser", "Expected 'of' here");
+                this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+                System.exit(1);
+                return null;
+            }
+            line.consume();
+
+            condition.append(itemStackVariableName).append(".getAmount() == ").append(amount).append(" && ");
+        }
+
+        // parse the item type
+        Material mat;
+        String errTok;
+        if (line.testByDelimiters('{', '}')) { // starts with variable
+            String variable = line.consume();
+            String parsedKey = replaceKnownInlineStringVariables(variable, false);
+            errTok = parsedKey;
+            mat = Fragment.parseItem(parsedKey);
+        } else {
+            errTok = line.nextToken();
+            mat = line.parseItem();
+        }
+
+        if (mat == null) {
+            Main.log(Level.WARNING, "ActionParser", "Unknown item type: " + errTok);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+            return null;
+        }
+        this.generator.requireImport("org.bukkit.Material");
+        condition.append(itemStackVariableName).append(".getType() == Material.").append(mat.name());
+
+        while (!line.isEmpty()) {
+            if (line.testExact(":")) {
+                break;
+            }
+
+            condition.append(" && ");
+
+            if (line.test("named")) {
+                line.consume();
+                if (!line.testByDelimiters('{', '}')) {
+                    Main.log(Level.WARNING, "ActionParser", "Expected a constant here");
+                    this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+                    System.exit(1);
+                    return null;
+                }
+                String variable = line.consume();
+                String parsedStringContent = replaceKnownInlineStringVariables(variable, false);
+                this.generator.requireImport("net.kyori.adventure.text.TextComponent");
+                condition.append("((TextComponent) ")
+                        .append(itemStackVariableName)
+                        .append(".getItemMeta().displayName()).content() == \"")
+                        .append(parsedStringContent)
+                        .append("\"");
+            } else if (line.test("with lore") || line.test("with the lore")) {
+                line.consume();
+                if (!line.testByDelimiters('{', '}')) {
+                    this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+                    System.exit(1);
+                    return null;
+                }
+                String variable = line.consume();
+                String parsedKey = replaceKnownInlineStringVariables(variable, false);
+                this.generator.requireImport("net.kyori.adventure.text.TextComponent");
+                int moduleInt = Main.nextModuleInt();
+                condition.append(itemStackVariableName)
+                        .append(".getItemMeta().lore().stream().anyMatch(el")
+                        .append(moduleInt)
+                        .append(" -> ((TextComponent) el")
+                        .append(moduleInt)
+                        .append(").content() == \"")
+                        .append(parsedKey)
+                        .append("\")");
+            } else {
+                condition.delete(condition.length() - 4, condition.length());
+                break;
+            }
+        }
+
+        return condition.toString();
     }
 
     private String parseVariableFirstConditionalExpression(String firstPartOfEquation, Fragment line) {
@@ -403,7 +585,7 @@ public class ActionParser {
         }
 
         if (!isOption) {
-            Matcher mat = Pattern.compile("\\{@([a-zA-Z]+)}").matcher(original);
+            Matcher mat = Pattern.compile("\\{@([a-zA-Z0-9]+)}").matcher(original);
             while (mat.find()) {
                 String target = mat.group(0);
                 String option = Options.getOption(target.substring(2, target.length() - 1));

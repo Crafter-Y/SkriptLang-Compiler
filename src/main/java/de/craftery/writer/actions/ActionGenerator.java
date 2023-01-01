@@ -40,6 +40,16 @@ public abstract class ActionGenerator extends JavaFileGenerator {
         System.exit(1);
     }
 
+    public void requireRightClick() {
+        Main.log(Level.WARNING, "ActionGenerator", "Right click is only available for click event!");
+        System.exit(1);
+    }
+
+    public void requireLeftClick() {
+        Main.log(Level.WARNING, "ActionGenerator", "Left click is only available for click event!");
+        System.exit(1);
+    }
+
     public abstract Type getType();
     protected abstract RawMethodSection getBodySection();
     public enum Type {

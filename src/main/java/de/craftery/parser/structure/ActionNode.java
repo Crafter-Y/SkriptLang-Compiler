@@ -14,6 +14,7 @@ public class ActionNode extends StructureNode {
     @Getter
     @Setter
     private int baseIndentation;
+    @Getter
     @Setter
     private ActionGenerator generator;
     public ActionNode(int baseIndentation) {

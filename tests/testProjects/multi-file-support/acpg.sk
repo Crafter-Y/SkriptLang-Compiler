@@ -35,7 +35,7 @@ command /ac:
 	permission: spade.ac
 	permission message: "No Perm's"
 	trigger:
-#		give player 1 {@RType} named {@RName} with lore {@RLore}
-#		give player 1 {@RType} named {@RName2} with lore {@RLore2}
-#		give player 1 {@RType} named {@RName3} with lore {@RLore3}
-#		give player 1 {@RType} named {@RName4} with lore {@RLore4}
+		give player 1 {@RType} named {@RName} with lore {@RLore}
+		give player 1 {@RType} named {@RName2} with lore {@RLore2}
+		give player 1 {@RType} named {@RName3} with lore {@RLore3}
+		give player 1 {@RType} named {@RName4} with lore {@RLore4}

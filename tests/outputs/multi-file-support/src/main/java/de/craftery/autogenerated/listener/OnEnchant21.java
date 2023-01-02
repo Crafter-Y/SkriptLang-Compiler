@@ -6,8 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 
-public class OnEnchant16 implements Listener {
-    public OnEnchant16() {
+public class OnEnchant21 implements Listener {
+    public OnEnchant21() {
         Main.registerEvent(this);
     }
     

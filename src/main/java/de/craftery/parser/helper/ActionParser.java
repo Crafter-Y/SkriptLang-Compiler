@@ -270,18 +270,10 @@ public class ActionParser {
     }
 
     private String parsePlayerIsHoldingCondition(Fragment line) {
-        //int moduleInt = Main.nextModuleInt();
-        //String moduleVariable = "itemStack" + moduleInt;
-        //this.generator.addBodyLine("ItemStack " + moduleVariable + " = player.getInventory().getItemInMainHand();");
-        //this.generator.requireImport("org.bukkit.inventory.ItemStack");
         return parseComparisonBetweenVariableAndItemProperties("player.getInventory().getItemInMainHand()", line);
     }
 
     private String parseComparisonBetweenVariableAndItemProperties(String itemStackVariableName, Fragment line) {
-        //     if player is holding {@RType} named {@RName} with lore {@RLore}:
-        // this should outpu something like
-        // variable.getType() == Material.... && variable.getDisplayName() == ".....
-
         StringBuilder condition = new StringBuilder();
 
         // parse optional amount
@@ -300,24 +292,7 @@ public class ActionParser {
         }
 
         // parse the item type
-        Material mat;
-        String errTok;
-        if (line.testByDelimiters('{', '}')) { // starts with variable
-            String variable = line.consume();
-            String parsedKey = replaceKnownInlineStringVariables(variable, false);
-            errTok = parsedKey;
-            mat = Fragment.parseItem(parsedKey);
-        } else {
-            errTok = line.nextToken();
-            mat = line.parseItem();
-        }
-
-        if (mat == null) {
-            Main.log(Level.WARNING, "ActionParser", "Unknown item type: " + errTok);
-            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
-            System.exit(1);
-            return null;
-        }
+        Material mat = parseMaterial(line);
         this.generator.requireImport("org.bukkit.Material");
         condition.append(itemStackVariableName).append(".getType() == Material.").append(mat.name());
 
@@ -370,6 +345,84 @@ public class ActionParser {
         }
 
         return condition.toString();
+    }
+
+    private String parseItem(Fragment line) {
+        int amount;
+
+        if (line.testInt()) {
+            amount = line.consumeInt();
+        } else {
+            this.generator.getNode().reportUnknownToken(line.getContents(), line.nextToken(), 0);
+            System.exit(1);
+            return null;
+        }
+
+        Material mat = parseMaterial(line);
+
+        int moduleInt = Main.nextModuleInt();
+
+        this.generator.requireImport("org.bukkit.inventory.ItemStack");
+        this.generator.requireImport("org.bukkit.Material");
+        String itemStackVariableName = "itemStack" + moduleInt;
+        this.generator.addBodyLine("ItemStack "+ itemStackVariableName +" = new ItemStack(Material." + mat.name() + ", " + amount + ");");
+
+        while (!line.isEmpty()) {
+            if (line.testExact(":")) {
+                break;
+            }
+
+            if (line.test("named")) {
+                line.consume();
+                if (!line.testByDelimiters('{', '}')) {
+                    Main.log(Level.WARNING, "ActionParser", "Expected a constant here");
+                    this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+                    System.exit(1);
+                    return null;
+                }
+                String variable = line.consume();
+                String parsedStringContent = replaceKnownInlineStringVariables(variable, false);
+                this.generator.requireImport("net.kyori.adventure.text.Component");
+                this.generator.addBodyLine(itemStackVariableName + ".getItemMeta().displayName(Component.text(\"" + parsedStringContent + "\"));");
+            } else if (line.test("with lore") || line.test("with the lore")) {
+                line.consume();
+                if (!line.testByDelimiters('{', '}')) {
+                    this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+                    System.exit(1);
+                    return null;
+                }
+                String variable = line.consume();
+                String parsedKey = replaceKnownInlineStringVariables(variable, false);
+                this.generator.requireImport("net.kyori.adventure.text.Component");
+                this.generator.requireImport("java.util.List");
+                this.generator.addBodyLine(itemStackVariableName + ".getItemMeta().lore(List.of(Component.text(\"" + parsedKey + "\")));");
+            } else {
+                break;
+            }
+        }
+
+        return itemStackVariableName;
+    }
+
+    private Material parseMaterial(Fragment line) {
+        Material mat;
+        String errTok;
+        if (line.testByDelimiters('{', '}')) { // starts with variable
+            String variable = line.consume();
+            String parsedKey = replaceKnownInlineStringVariables(variable, false);
+            errTok = parsedKey;
+            mat = Fragment.parseItem(parsedKey);
+        } else {
+            errTok = line.nextToken();
+            mat = line.parseItem();
+        }
+        if (mat == null) {
+            Main.log(Level.WARNING, "ActionParser", "Unknown item type: " + errTok);
+            this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
+            System.exit(1);
+            return null;
+        }
+        return mat;
     }
 
     private String parseVariableFirstConditionalExpression(String firstPartOfEquation, Fragment line) {
@@ -627,30 +680,14 @@ public class ActionParser {
 
     private void parseGiveAction(Fragment fragment) {
         String playerVariableName;
-        String itemStackVariableName;
-        int amount;
-
         playerVariableName = parseTargetVariable(fragment);
 
-        if (fragment.testInt()) {
-            amount = fragment.consumeInt();
-        } else {
-            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
-            System.exit(1);
-            return;
-        }
+        String itemStackVariableName = parseItem(fragment);
 
-        Material material = fragment.parseItem();
-        if (material == null) {
-            this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
-            System.exit(1);
-        }
         if (!fragment.isEmpty()) {
             this.generator.getNode().reportUnknownToken(fragment.getContents(), fragment.nextToken(), 0);
             System.exit(1);
         }
-
-        itemStackVariableName = createItemStack(material, amount);
 
         generateGiveAction(playerVariableName, itemStackVariableName);
     }
@@ -678,14 +715,7 @@ public class ActionParser {
         }
     }
 
-    private String createItemStack(Material material, int amount) {
-        return "new ItemStack(Material." + material.name() + ", " + amount + ")";
-    }
-
     private void generateGiveAction(String playerVariableName, String itemStackVariableName) {
-        this.generator.requireImport("org.bukkit.inventory.ItemStack");
-        this.generator.requireImport("org.bukkit.Material");
-
         this.generator.addBodyLine(playerVariableName + ".getInventory().addItem(" + itemStackVariableName + ");");
     }
 }

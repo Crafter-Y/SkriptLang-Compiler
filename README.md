@@ -4,7 +4,7 @@ This project aims to compile the "code" files designed for the Minecraft Plugin 
 ## Usage
 
 ```bash
-java -jar skriptlangcompiler-1.0-shaded.jar ./inputfolder
+java -jar skriptlangcompiler-1.0-shaded.jar ./inputfolder ./outputfolder
 ```
 The input folder should contain individual files with `.sk` types. Folders and files prefixed with `-` will be ignored.
 

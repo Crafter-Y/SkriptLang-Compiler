@@ -6,7 +6,7 @@ import lombok.Getter;
 public class PomGenerator extends StructuredFile {
     public PomGenerator() {
         this.setFileName("pom.xml");
-        this.setFolderPrefix("out/");
+        this.setFolderPrefix("");
     }
 
     @Override

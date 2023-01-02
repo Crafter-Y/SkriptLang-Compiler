@@ -6,7 +6,7 @@ import lombok.Getter;
 public class PluginYMLGenerator extends StructuredFile {
     public PluginYMLGenerator() {
         this.setFileName("plugin.yml");
-        this.setFolderPrefix("out/src/main/resources/");
+        this.setFolderPrefix("src/main/resources/");
     }
 
     @Override

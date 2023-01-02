@@ -21,7 +21,7 @@ public abstract class WriterComponent {
     private String fileName;
 
     @Setter
-    private String folderPrefix = "out/src/main/java/";
+    private String folderPrefix = "src/main/java/";
 
     @Setter
     private String packagePrefix = null;
@@ -64,6 +64,12 @@ public abstract class WriterComponent {
 
     private String buildPackagePath() {
         StringBuilder pathBuilder = new StringBuilder();
+
+        pathBuilder.append(Main.getOutputFolder());
+
+        if (!pathBuilder.toString().endsWith("/")) {
+            pathBuilder.append("/");
+        }
 
         pathBuilder.append(folderPrefix);
 

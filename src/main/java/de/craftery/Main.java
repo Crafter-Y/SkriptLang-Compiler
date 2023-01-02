@@ -17,13 +17,27 @@ public class Main {
     @Getter
     private static final ProjectGenerator projectGenerator = new ProjectGenerator();
     private static int moduleInt = ThreadLocalRandom.current().nextInt(100, 500);
+    @Getter
+    private static String outputFolder;
     public static void main(String[] args) {
         if (args.length == 0) {
             log(Level.WARNING, "Main", "Input folder not provided!");
             System.exit(1);
         }
 
+        if (args.length == 1) {
+            log(Level.WARNING, "Main", "Output folder not provided!");
+            System.exit(1);
+        }
+
+        if (args.length > 2) {
+            log(Level.WARNING, "Main", "Too many arguments!");
+            System.exit(1);
+        }
+
         List<File> inputFiles = getApplicableFilesOfDirectory(args[0]);
+
+        outputFolder = args[1];
 
         SkriptParser parser = new SkriptParser();
         for (File file : inputFiles) {

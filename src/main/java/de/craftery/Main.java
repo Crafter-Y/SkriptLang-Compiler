@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
@@ -116,6 +117,8 @@ public class Main {
             log(Level.SEVERE, "Main", "No applicable files found in directory " + dir + "!");
             System.exit(1);
         }
+
+        Collections.sort(files);
 
         return files;
     }

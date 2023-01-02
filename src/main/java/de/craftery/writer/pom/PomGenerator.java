@@ -2,6 +2,7 @@ package de.craftery.writer.pom;
 
 import de.craftery.writer.StructuredFile;
 import lombok.Getter;
+import lombok.Setter;
 
 public class PomGenerator extends StructuredFile {
     public PomGenerator() {
@@ -22,6 +23,7 @@ public class PomGenerator extends StructuredFile {
     @Getter
     private final PomProjectSection projectSection = new PomProjectSection();
 
+    @Setter
     private static PomGenerator instance;
     public static PomGenerator getInstance() {
         if (instance == null) {

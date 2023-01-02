@@ -1,0 +1,11 @@
+on enchant prepare:
+	if player is op:
+		stop
+	else:
+		cancel event
+	
+on enchant:
+	if player is op:
+		stop
+	else:
+		cancel event

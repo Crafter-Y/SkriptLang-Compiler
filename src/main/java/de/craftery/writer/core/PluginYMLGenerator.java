@@ -2,6 +2,7 @@ package de.craftery.writer.core;
 
 import de.craftery.writer.StructuredFile;
 import lombok.Getter;
+import lombok.Setter;
 
 public class PluginYMLGenerator extends StructuredFile {
     public PluginYMLGenerator() {
@@ -29,6 +30,7 @@ public class PluginYMLGenerator extends StructuredFile {
         getInstance().getCommands().registerCommand(commandName.toLowerCase(), new PluginYMLCommand());
     }
 
+    @Setter
     private static PluginYMLGenerator instance;
     public static PluginYMLGenerator getInstance() {
         if (instance == null) {

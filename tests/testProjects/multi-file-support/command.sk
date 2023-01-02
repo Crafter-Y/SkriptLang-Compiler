@@ -1,0 +1,11 @@
+command /diamond:
+    aliases: /dia, /d
+    executable by: players
+    permission: diamond.command
+    permission message: you need to be a staff member to use this
+    description: hi look im in help menu
+    cooldown: 5 seconds
+    trigger:
+        give player 64 diamonds
+    cooldown message: you need to wait 5 seconds to use this
+    cooldown bypass: operator.permission.node

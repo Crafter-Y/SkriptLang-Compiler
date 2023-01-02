@@ -1,0 +1,16 @@
+command /odds:
+	usage: /odd
+	trigger:
+		send "&6&m&l------------------------"
+		send "&4&lForgotten &8&l» &70.001%%."
+		send "&d&lMythical &8&l» &70.1%%."
+		send "&e&lGodly &8&l» &71%%."
+		send "&6&lLegendary &8&l» &75%%."
+		send "&5&lEpic &8&l» &710%%."
+		send "&3&lRare &8&l» &725%%."
+		send "&f&lCommon &8&l» &750%%"
+		send "&a&lTrash &8&l» &710%%"
+		send "&eTag(s) &8&l» &71%%"
+		send "&cBoss &8&l» &75%%"
+		send "&2Key(s) &8&l» &71%%"
+		send "&6&m&l------------------------"

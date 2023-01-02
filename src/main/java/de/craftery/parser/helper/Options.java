@@ -1,13 +1,15 @@
 package de.craftery.parser.helper;
 
 import de.craftery.Main;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
 public class Options {
-    private static final Map<String, String> options = new HashMap<>();
+    @Setter
+    private static Map<String, String> options = new HashMap<>();
 
     public static void registerOption(String key, String value) {
         if (options.containsKey(key)) {

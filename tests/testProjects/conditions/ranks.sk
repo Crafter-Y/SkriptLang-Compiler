@@ -1,0 +1,57 @@
+
+	
+options:
+	np: &6&lRANKS &8| &cNo permission.
+	p:	&6&lRANKS &8|
+        
+command /rank [<text>] [<offline player>] [<text>]:
+    permission: ranks.rank
+    permission message: {@np}
+    aliases: grant, setrank
+    trigger:
+        if argument 1 is not set:
+            send "&6&m&l--------------------------------------------------"
+            send "&e/rank set (player) (rank) &8» &7Sets a player's rank."
+            send "&e/rank list &8» &7Shows a list of all the groups on the server."
+            send "&e/rank info &8» &7Shows info about the Skript."
+            send "&6&m&l--------------------------------------------------"
+        else if argument 1 is "set":
+            if argument 2 is set:
+                if argument 3 is "Administrator" or "Admin":
+                    set {rank.%arg 2%} to "&c&lADMIN&c"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &c&lADMIN&7."
+                    send "{@p} &7Your rank has been set to &c&lADMIN&7." to argument 2
+                if argument 3 is "Mod" or "Moderator":
+                    set {rank.%arg 2%} to "&e&lMOD&e"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &e&lMOD&7."
+                    send "{@p} &7Your rank has been set to &e&lMOD&7." to argument 2
+                if argument 3 is "Helper" or "Support":
+                    set {rank.%arg 2%} to "&b&lHELPER&b"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &b&lHELPER&7."
+                    send "{@p} &7Your rank has been set to &b&lHELPER&7." to argument 2
+                if argument 3 is "Owner":
+                    set {rank.%arg 2%} to "&4&lOWNER&4"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &4&lOWNER&7."
+                    send "{@p} &7Your rank has been set to &4&lOWNER&7." to argument 2
+                if argument 3 is "default":
+                    set {rank.%arg 2%} to "&7"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &7default."
+                    send "{@p} &7Your rank has been set to &7default." to argument 2
+                if argument 3 is "builder":
+                    set {rank.%arg 2%} to "&9&lBUILDER"
+                    send "{@p} &e%arg-2%'s &7rank is now to set to &9&lBUILDER."
+                    send "{@p} &7Your rank has been set to &9&lBUILDER." to argument 2
+                if argument 3 is not "default", "Helper", "Support", "Moderator", "Mod", "Admin", "Owner", "builder" or "Administrator":
+                    send "{@p} &7That is not a role. Do &e/rank list &7to see the roles available."
+				
+            else:
+                send "{@p} &7Please specify a user to set the rank for."
+        else if argument 1 is "list":
+            send "&6&m&l--------------------------------------------------"
+            send "&4&lOWNER &8&l» &7Has every permission."
+            send "&c&lADMIN &8&l» &7Has every permission."
+            send "&6&lSR.MOD &8&l» &7Has every permission."
+            send "&c&lMOD &8&l» &7Has punishment and gamemode permissions."
+            send "&b&lHELPER &8&l» &7Has kick and fly permissions."
+            send "&7default &8&l» &7Not much."
+            send "&6&m&l--------------------------------------------------"

@@ -1,0 +1,41 @@
+options:
+
+
+
+# KEYS
+    RType: PAPER
+    RName: "&r&6&lWheat &f&lCompressor"
+    RLore: "&6Compresses Wheat For You Right Click to Redeem"
+    RName2: "&r&9&lCarrot &f&lCompressor"
+    RLore2: "&9Compresses Carrot's For You Right Click to Redeem"
+    RName3: "&r&4&lPotato &r&f&lCompressor"
+    RLore3: "&4Compresses Carrot's For You Right Click to Redeem"
+    RName4: "&r&a&lBeetroot &r&f&lCompressor"
+    RLore4: "&aCompresses Carrot's For You Right Click to Redeem"
+on right click:
+    if player is holding {@RType} named {@RName} with lore {@RLore}:
+        execute console command "/lp user %player% permission set command.ac"
+        remove 1 of Paper named {@RName} with the lore {@RLore} from player
+        send "&6&lAutoCompressor&7: &f&lWheat Unlocked!" to player
+    else if player is holding {@RType} named {@RName2} with lore {@RLore2}:
+        execute console command "/lp user %player% permission set command.ac2"
+        remove 1 of Paper named {@RName2} with the lore {@RLore2} from player
+        send "&9&lAutoCompressor&7: &f&lCarrot unlocked!" to player
+    else if player is holding {@RType} named {@RName3} with the lore {@RLore3}:
+        execute console command "/lp user %player% permission set command.ac3"
+        remove 1 of Paper named {@RName3} with the lore {@RLore3} from player
+        send "&4&lAutoCompressor&7: &f&lPotato unlocked!" to player
+    else if player is holding {@RType} named {@RName4} with the lore {@RLore4}:
+        execute console command "/lp user %player% permission set command.ac4"
+        remove 1 of Paper named {@RName4} with the lore {@RLore4} from player
+        send "&a&lAutoCompressor&7: &f&lBeetroot unlocked!" to player
+        
+		
+command /ac:
+	permission: spade.ac
+	permission message: "No Perm's"
+	trigger:
+#		give player 1 {@RType} named {@RName} with lore {@RLore}
+#		give player 1 {@RType} named {@RName2} with lore {@RLore2}
+#		give player 1 {@RType} named {@RName3} with lore {@RLore3}
+#		give player 1 {@RType} named {@RName4} with lore {@RLore4}

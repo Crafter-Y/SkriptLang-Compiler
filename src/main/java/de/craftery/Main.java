@@ -15,11 +15,12 @@ import java.util.logging.Level;
 
 public class Main {
     @Getter
-    private static final ProjectGenerator projectGenerator = new ProjectGenerator();
+    private static ProjectGenerator projectGenerator;
     private static int moduleInt = ThreadLocalRandom.current().nextInt(100, 500);
     @Getter
     private static String outputFolder;
     public static void main(String[] args) {
+        projectGenerator = new ProjectGenerator();
         if (args.length == 0) {
             log(Level.WARNING, "Main", "Input folder not provided!");
             System.exit(1);
@@ -30,7 +31,11 @@ public class Main {
             System.exit(1);
         }
 
-        if (args.length > 2) {
+        if (args.length == 3) {
+            moduleInt = Integer.parseInt(args[2]);
+        }
+
+        if (args.length > 3) {
             log(Level.WARNING, "Main", "Too many arguments!");
             System.exit(1);
         }

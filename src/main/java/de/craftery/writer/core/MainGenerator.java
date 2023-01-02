@@ -1,9 +1,11 @@
 package de.craftery.writer.core;
 
 import de.craftery.writer.javaFile.*;
+import lombok.Setter;
 
 
 public class MainGenerator extends JavaFileGenerator {
+    @Setter
     private static MainGenerator instance;
     private boolean isCooldownHandlerRequired = false;
     private boolean isVariableStoreRequired = false;

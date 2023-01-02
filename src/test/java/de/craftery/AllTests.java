@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,13 +65,17 @@ public class AllTests {
     }
 
     private void compareTwoFiles(File expectedFile, File realFile) {
+        // compare line by line
         try {
-            String expectedContent = new String(Files.readAllBytes(expectedFile.toPath()));
-            String realContent = new String(Files.readAllBytes(realFile.toPath()));
-            assertEquals(expectedContent, realContent, "File content is not the same: " + realFile.getAbsolutePath());
+            List<String> expectedLines = Files.readAllLines(expectedFile.toPath());
+            List<String> realLines = Files.readAllLines(realFile.toPath());
+            assertEquals(expectedLines.size(), realLines.size(), "File size not equal: " + realFile.getAbsolutePath());
+            for (int i = 0; i < expectedLines.size(); i++) {
+                assertEquals(expectedLines.get(i), realLines.get(i), "File content not equal: " + realFile.getAbsolutePath());
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
+            fail("Error while comparing files: " + realFile.getAbsolutePath());
         }
     }
 

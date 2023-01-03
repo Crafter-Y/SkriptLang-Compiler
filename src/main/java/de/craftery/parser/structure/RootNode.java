@@ -4,6 +4,7 @@ import de.craftery.Fragment;
 import de.craftery.Main;
 import de.craftery.parser.SkriptParser;
 import de.craftery.parser.structure.events.ItemEnchantEventNode;
+import de.craftery.parser.structure.events.OnChatEventNode;
 import de.craftery.parser.structure.events.OnClickEventNode;
 import de.craftery.parser.structure.events.PrepareItemEnchantEventNode;
 import de.craftery.writer.core.MainGenerator;
@@ -45,6 +46,10 @@ public class RootNode extends StructureNode {
             SkriptParser.entryNode(node);
         } else if (testOnClick(line)) {
             OnClickEventNode node = new OnClickEventNode().initialize(line);
+            SkriptParser.entryNode(node);
+        } else if (line.test("on chat")) {
+            line.consume();
+            OnChatEventNode node = new OnChatEventNode();
             SkriptParser.entryNode(node);
         } else {
             reportUnknownToken(line, line.nextToken(), 0);

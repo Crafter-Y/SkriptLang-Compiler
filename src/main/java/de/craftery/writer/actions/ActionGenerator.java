@@ -55,6 +55,7 @@ public abstract class ActionGenerator extends JavaFileGenerator {
     public enum Type {
         COMMAND,
         ENCHANT_EVENT,
-        PREPARE_ENCHANT_EVENT
+        PREPARE_ENCHANT_EVENT,
+        CHAT_EVENT
     }
 }

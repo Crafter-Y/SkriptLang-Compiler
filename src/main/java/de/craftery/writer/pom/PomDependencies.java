@@ -22,7 +22,7 @@ public class PomDependencies  extends WritingSection {
         this.getLines().add("    <dependency>");
         this.getLines().add("        <groupId>io.papermc.paper</groupId>");
         this.getLines().add("        <artifactId>paper-api</artifactId>");
-        this.getLines().add("        <version>1.19.2-R0.1-SNAPSHOT</version>");
+        this.getLines().add("        <version>1.19.3-R0.1-SNAPSHOT</version>");
         this.getLines().add("        <scope>provided</scope>");
         this.getLines().add("    </dependency>");
         for (PomDependency dependency : dependencies) {

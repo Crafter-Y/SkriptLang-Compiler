@@ -1,0 +1,15 @@
+on chat:
+	if {rank.%player%} is "&4&lOWNER&4":
+		set {sort.%player%} to "&0&r"
+	if {rank.%player%} is "&c&lADMIN&c":
+		set {sort.%player%} to "&1&r"
+	if {rank.%player%} is "&e&lMOD&e":
+		set {sort.%player%} to "&2&r"
+	if {rank.%player%} is "&b&lHELPER&b":
+		set {sort.%player%} to "&d&r"
+	if {rank.%player%} is "&7":
+		set {sort.%player%} to "&e&r"
+		
+command /sorter:
+	trigger:
+		send {sort.%player%} to player

@@ -169,7 +169,7 @@ public class ActionParser {
     }
 
     private void generateBroadcastAction(String broadcastMessage) {
-        String messageComponent = buildMessageComponent(broadcastMessage);
+        String messageComponent = buildMessageComponentWithString(broadcastMessage);
 
         this.generator.requireImport("org.bukkit.Bukkit");
         this.generator.addBodyLine("Bukkit.broadcast(" + messageComponent + ");");
@@ -569,12 +569,17 @@ public class ActionParser {
         String message;
         if (line.testString()) {
             message = line.consumeDelimitedExpression();
+            messageComponentVariable = buildMessageComponentWithString(message);
+        } else if (line.testByDelimiters('{', '}')) {
+            String variable = line.consumeDelimitedExpression();
+            String parsedKey = replaceKnownInlineStringVariables(variable, false);
+            messageComponentVariable = buildMessageComponent(getVariable(parsedKey));
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
         }
-        messageComponentVariable = buildMessageComponent(message);
+
 
         if (line.isEmpty()) {
             this.generator.setOnlyExecutableByPlayers();
@@ -666,12 +671,18 @@ public class ActionParser {
         return original;
     }
 
-    private String buildMessageComponent(String original) {
+    private String buildMessageComponentWithString(String original) {
         this.generator.requireImport("net.kyori.adventure.text.Component");
 
         original = replaceKnownInlineStringVariables(original, false);
 
         return "Component.text(\"" + original + "\")";
+    }
+
+    private String buildMessageComponent(String variableName) {
+        this.generator.requireImport("net.kyori.adventure.text.Component");
+
+        return "Component.text((String) " + variableName + ")";
     }
 
     private void generateSendAction(String targetVariable, String messageComponentVariable) {

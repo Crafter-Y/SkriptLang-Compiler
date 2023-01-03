@@ -49,6 +49,7 @@ public class SkriptParser {
             Main.log(Level.WARNING, "SkriptParser", "Indentation error on line " + lineNumber + ": '" + line + "'");
             System.exit(1);
         }
+        line = line.split("#")[0];
         structureLevel.peek().acceptLine(new Fragment(line), indentationSpaces / 4);
     }
 

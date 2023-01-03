@@ -3,6 +3,7 @@ package de.craftery;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 public class Fragment {
     @Setter
@@ -122,6 +123,17 @@ public class Fragment {
 
     public Material parseItem() {
         return parseItem(this);
+    }
+
+    public EntityType parseEntity() {
+        if (this.isEmpty()) return null;
+        for (EntityType entity : EntityType.values()) {
+            if (this.testIgnoreCase(entity.name().replace("_", " ").toLowerCase())) {
+                this.consume();
+                return entity;
+            }
+        }
+        return null;
     }
 
     public static Material parseItem(String line) {

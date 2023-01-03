@@ -46,7 +46,7 @@ public abstract class ActionGenerator extends JavaFileGenerator {
     }
 
     public void requireLeftClick() {
-        Main.log(Level.WARNING, "ActionGenerator", "Left click is only available for click event!");
+        Main.log(Level.WARNING, "ActionGenerator", "Left click is only available for click event on blocks!");
         System.exit(1);
     }
 

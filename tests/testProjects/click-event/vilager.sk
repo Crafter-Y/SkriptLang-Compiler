@@ -1,0 +1,14 @@
+on rightclick on entity:
+	if entity's display name is "&9&lHerbert":
+		if player is op:
+			stop
+		
+		else if player is not op:
+			cancel event
+			
+	else if entity's display name is "&9&lGünther" or "&9&lKlaus" or "&9&lDieter" or "&9&lWolfgang" or "&9&lPeter" or "&9&lHartmut" or "&9&lEdgar":
+		stop
+		
+	else if entity is villager: #inline comment
+		if player is not op:
+			cancel event

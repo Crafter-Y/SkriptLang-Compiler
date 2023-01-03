@@ -6,6 +6,7 @@ import de.craftery.writer.actions.ActionGenerator;
 import de.craftery.writer.core.FormatterGenerator;
 import de.craftery.writer.core.MainGenerator;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -241,10 +242,20 @@ public class ActionParser {
             line.consume();
             this.generator.setOnlyExecutableByPlayers();
             condition = "player.isOp()";
+        } else if (line.test("player is not op")) {
+            line.consume();
+            this.generator.setOnlyExecutableByPlayers();
+            condition = "!player.isOp()";
         } else if (line.test("player is holding")) {
             line.consume();
             this.generator.setOnlyExecutableByPlayers();
             condition = parsePlayerIsHoldingCondition(line);
+        } else if (line.test("entity's display name")) {
+            line.consume();
+            condition = parseVariableFirstConditionalExpression("entity.getName()", line);
+        } else if (line.test("entity is")) {
+            line.consume();
+            condition = parseEntityTypeCheckCondition("entity", line);
         } else {
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
@@ -267,6 +278,12 @@ public class ActionParser {
         }
 
         this.generator.getNode().setMaxIndentation(this.generator.getNode().getMaxIndentation() + 1);
+    }
+
+    private String parseEntityTypeCheckCondition(String entityVariable, Fragment line) {
+        EntityType entityType = line.parseEntity();
+        this.generator.requireImport("org.bukkit.entity.EntityType");
+        return entityVariable + ".getType() == EntityType." + entityType.name();
     }
 
     private String parsePlayerIsHoldingCondition(Fragment line) {

@@ -7,17 +7,8 @@ import de.craftery.parser.structure.events.ItemEnchantEventNode;
 import de.craftery.parser.structure.events.OnChatEventNode;
 import de.craftery.parser.structure.events.OnClickEventNode;
 import de.craftery.parser.structure.events.PrepareItemEnchantEventNode;
-import de.craftery.writer.core.MainGenerator;
-import de.craftery.writer.core.PluginYMLGenerator;
-import de.craftery.writer.pom.PomGenerator;
 
 public class RootNode extends StructureNode {
-    public RootNode() {
-        PomGenerator.initialize();
-        PluginYMLGenerator.initialize();
-        MainGenerator.initialize();
-    }
-
     @Override
     public void acceptLine(Fragment line, int indentation) {
         if (indentation != 0) {

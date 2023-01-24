@@ -4,15 +4,14 @@ import de.craftery.writer.WritingSection;
 import lombok.Getter;
 
 public class PomProjectSection extends WritingSection {
+    @Getter
+    private final PomRepositories repositories = new PomRepositories();
+    @Getter
+    private final PomDependencies dependencies = new PomDependencies();
+
     public PomProjectSection() {
         super(0);
     }
-
-    @Getter
-    private final PomRepositories repositories = new PomRepositories();
-
-    @Getter
-    private final PomDependencies dependencies = new PomDependencies();
 
     @Override
     public void buildLines() {

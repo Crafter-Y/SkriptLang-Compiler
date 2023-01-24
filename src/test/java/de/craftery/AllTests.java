@@ -1,9 +1,6 @@
 package de.craftery;
 
 import de.craftery.parser.helper.Options;
-import de.craftery.writer.core.MainGenerator;
-import de.craftery.writer.core.PluginYMLGenerator;
-import de.craftery.writer.pom.PomGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -26,9 +23,6 @@ public class AllTests {
         for (File testProject : testProjects) {
             if (testProject.isDirectory()) {
                 Options.setOptions(new HashMap<>());
-                PomGenerator.setInstance(null);
-                MainGenerator.setInstance(null);
-                PluginYMLGenerator.setInstance(null);
                 Main.main(new String[]{testProject.getAbsolutePath(), "tests/realOutputs/" + testProject.getName(), "1"});
             }
         }

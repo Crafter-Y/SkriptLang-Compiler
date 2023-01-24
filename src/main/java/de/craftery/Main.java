@@ -1,7 +1,6 @@
 package de.craftery;
 
 import de.craftery.parser.SkriptParser;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -13,13 +12,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class Main {
-    @Getter
-    private static ProjectGenerator projectGenerator;
     private static int moduleInt = ThreadLocalRandom.current().nextInt(100, 500);
-    @Getter
-    private static String outputFolder;
+
     public static void main(String[] args) {
-        projectGenerator = new ProjectGenerator();
         if (args.length == 0) {
             Main.exit("Input folder not provided!");
         }
@@ -37,9 +32,8 @@ public class Main {
         }
 
         List<File> inputFiles = getApplicableFilesOfDirectory(args[0]);
-        outputFolder = args[1];
 
-        SkriptParser parser = new SkriptParser();
+        SkriptParser parser = new SkriptParser(args[1]);
         for (File file : inputFiles) {
             Main.log("Parsing file " + file.getName());
             List<String> inputFile = readFile(file);
@@ -53,8 +47,6 @@ public class Main {
             }
         }
         parser.finish();
-
-        projectGenerator.generate();
     }
 
     private static void log(Level level, String originString, String message) {

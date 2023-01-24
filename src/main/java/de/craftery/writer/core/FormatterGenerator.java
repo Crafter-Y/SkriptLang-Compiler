@@ -6,7 +6,6 @@ import de.craftery.writer.javaFile.RawMethodSection;
 
 public class FormatterGenerator extends JavaFileGenerator {
     private static FormatterGenerator instance;
-
     private boolean isLocationFormatterRequired = false;
     private boolean isUnknownFormatterRequired = false;
 
@@ -48,6 +47,7 @@ public class FormatterGenerator extends JavaFileGenerator {
     public void requireLocationFormatter() {
         this.isLocationFormatterRequired = true;
     }
+
     public void requireUnknownFormatter() {
         this.isLocationFormatterRequired = true;
         this.isUnknownFormatterRequired = true;

@@ -5,7 +5,7 @@ import de.craftery.writer.WritingSection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PomDependencies  extends WritingSection {
+public class PomDependencies extends WritingSection {
     public PomDependencies() {
         super(1);
     }

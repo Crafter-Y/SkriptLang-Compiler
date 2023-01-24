@@ -1,6 +1,7 @@
 package de.craftery.writer;
 
 import de.craftery.Main;
+import de.craftery.parser.SkriptParser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,28 +15,23 @@ import java.util.List;
 
 public abstract class WriterComponent {
     public WriterComponent() {
-        Main.getProjectGenerator().addComponent(this);
+        SkriptParser.getInstance().getProjectGenerator().addComponent(this);
     }
     @Setter
     private String fileName;
-
     @Setter
     private String folderPrefix = "src/main/java/";
-
     @Setter
     private String packagePrefix = null;
-
     @Setter
     private String packageName = null;
-
     @Getter
     private final List<String> content = new ArrayList<>();
-
-    public abstract void prepareContent();
-
     @Getter
     @Setter
     private boolean needed;
+
+    public abstract void prepareContent();
 
     public void write() {
         prepareContent();
@@ -63,7 +59,7 @@ public abstract class WriterComponent {
     private String buildPackagePath() {
         StringBuilder pathBuilder = new StringBuilder();
 
-        pathBuilder.append(Main.getOutputFolder());
+        pathBuilder.append(SkriptParser.getInstance().getOutputFolder());
 
         if (!pathBuilder.toString().endsWith("/")) {
             pathBuilder.append("/");

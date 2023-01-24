@@ -2,10 +2,13 @@ package de.craftery.parser;
 
 import de.craftery.Fragment;
 import de.craftery.Main;
+import de.craftery.ProjectGenerator;
 import de.craftery.parser.structure.RootNode;
 import de.craftery.parser.structure.StructureNode;
 import de.craftery.writer.core.FormatterGenerator;
 import de.craftery.writer.core.MainGenerator;
+import de.craftery.writer.core.PluginYMLGenerator;
+import de.craftery.writer.pom.PomGenerator;
 import lombok.Getter;
 
 import java.util.Stack;
@@ -13,20 +16,36 @@ import java.util.Stack;
 public class SkriptParser {
     @Getter
     private static SkriptParser instance;
-    public SkriptParser() {
+    @Getter
+    private final ProjectGenerator projectGenerator;
+    @Getter
+    private final MainGenerator mainGenerator;
+    @Getter
+    private final PluginYMLGenerator pluginYMLGenerator;
+    @Getter
+    private final String outputFolder;
+    private final Stack<StructureNode> structureLevel = new Stack<>();
+
+    public SkriptParser(String outputFolder) {
         instance = this;
-        structureLevel.push(new RootNode());
+        this.outputFolder = outputFolder;
+        this.projectGenerator = new ProjectGenerator();
+        this.mainGenerator = new MainGenerator();
+        this.pluginYMLGenerator = new PluginYMLGenerator();
+        new PomGenerator();
+
+        this.structureLevel.push(new RootNode());
     }
 
     public static void entryNode(StructureNode node) {
         SkriptParser.getInstance().structureLevel.push(node);
     }
+
     public static StructureNode exitNode() {
         SkriptParser.getInstance().structureLevel.pop();
         return SkriptParser.getInstance().structureLevel.peek();
     }
 
-    private final Stack<StructureNode> structureLevel = new Stack<>();
     public void acceptLine(String line, int lineNumber) {
         if (line.trim().equals("")) {
             return;
@@ -52,12 +71,13 @@ public class SkriptParser {
     }
 
     public void finish() {
-        MainGenerator.getInstance().build();
+        mainGenerator.build();
         if (FormatterGenerator.isInitialized()) {
             FormatterGenerator.getInstance().build();
         }
 
         // this calles completing actions on each (maybe) not finished node
         structureLevel.peek().acceptLine(new Fragment(""), 0);
+        projectGenerator.generate();
     }
 }

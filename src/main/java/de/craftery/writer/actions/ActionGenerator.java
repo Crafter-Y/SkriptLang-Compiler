@@ -9,7 +9,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public abstract class ActionGenerator extends JavaFileGenerator {
     @Getter
@@ -30,24 +29,19 @@ public abstract class ActionGenerator extends JavaFileGenerator {
     }
 
     public void setCommandCooldown(long cooldown) {
-        Main.log(Level.WARNING, "ActionGenerator", "Command cooldown is only available for commands!");
-        System.exit(1);
-        return;
+        Main.exit("Command cooldown is only available for commands!");
     }
 
     public void setOnlyExecutableByPlayers() {
-        Main.log(Level.WARNING, "ActionGenerator", "Only executable by players is only available for commands!");
-        System.exit(1);
+        Main.exit("Only executable by players is only available for commands!");
     }
 
     public void requireRightClick() {
-        Main.log(Level.WARNING, "ActionGenerator", "Right click is only available for click event!");
-        System.exit(1);
+        Main.exit("Right click is only available for click event!");
     }
 
     public void requireLeftClick() {
-        Main.log(Level.WARNING, "ActionGenerator", "Left click is only available for click event on blocks!");
-        System.exit(1);
+        Main.exit("Left click is only available for click event on blocks!");
     }
 
     public abstract Type getType();

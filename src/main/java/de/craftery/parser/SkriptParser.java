@@ -9,7 +9,6 @@ import de.craftery.writer.core.MainGenerator;
 import lombok.Getter;
 
 import java.util.Stack;
-import java.util.logging.Level;
 
 public class SkriptParser {
     @Getter
@@ -32,7 +31,7 @@ public class SkriptParser {
         if (line.trim().equals("")) {
             return;
         }
-        Main.log(Level.SEVERE, "SkriptParser", "Parsing Line " + lineNumber + " :'" + line + "'");
+        Main.log("Parsing Line " + lineNumber + " :'" + line + "'");
         int indentationSpaces = 0;
         while (true) {
             if (line.startsWith(" ")) {
@@ -46,8 +45,7 @@ public class SkriptParser {
             }
         }
         if (indentationSpaces % 4 != 0) {
-            Main.log(Level.WARNING, "SkriptParser", "Indentation error on line " + lineNumber + ": '" + line + "'");
-            System.exit(1);
+            Main.exit("Indentation error on line " + lineNumber + ": '" + line + "'");
         }
         line = line.split("#")[0];
         structureLevel.peek().acceptLine(new Fragment(line), indentationSpaces / 4);

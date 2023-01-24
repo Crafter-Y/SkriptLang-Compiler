@@ -2,15 +2,13 @@ package de.craftery;
 
 import de.craftery.parser.SkriptParser;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
@@ -23,13 +21,11 @@ public class Main {
     public static void main(String[] args) {
         projectGenerator = new ProjectGenerator();
         if (args.length == 0) {
-            log(Level.WARNING, "Main", "Input folder not provided!");
-            System.exit(1);
+            Main.exit("Input folder not provided!");
         }
 
         if (args.length == 1) {
-            log(Level.WARNING, "Main", "Output folder not provided!");
-            System.exit(1);
+            Main.exit("Output folder not provided!");
         }
 
         if (args.length == 3) {
@@ -37,17 +33,15 @@ public class Main {
         }
 
         if (args.length > 3) {
-            log(Level.WARNING, "Main", "Too many arguments!");
-            System.exit(1);
+            Main.exit("Too many arguments!");
         }
 
         List<File> inputFiles = getApplicableFilesOfDirectory(args[0]);
-
         outputFolder = args[1];
 
         SkriptParser parser = new SkriptParser();
         for (File file : inputFiles) {
-            Main.log(Level.INFO, "Main", "Parsing file " + file.getName());
+            Main.log("Parsing file " + file.getName());
             List<String> inputFile = readFile(file);
 
             for (int i = 0; i < inputFile.size(); i++) {
@@ -63,45 +57,49 @@ public class Main {
         projectGenerator.generate();
     }
 
-    public static void log(Level level, String origin, String message) {
-        String color = "";
-        /*if (Level.SEVERE.equals(level)) {
-            color = WinConsoleColor.ANSI_WHITE;
-        } else if (Level.WARNING.equals(level)) {
-            color = WinConsoleColor.ANSI_RED;
-        } else if (Level.INFO.equals(level)) {
-            color = WinConsoleColor.ANSI_YELLOW;
-        } else if (Level.CONFIG.equals(level)) {
-            color = WinConsoleColor.ANSI_BLUE;
-        } else if (Level.FINE.equals(level)) {
-            color = WinConsoleColor.ANSI_GREEN;
-        } else if (Level.FINER.equals(level)) {
-            color = WinConsoleColor.ANSI_GREEN;
-        } else {
-            color = WinConsoleColor.ANSI_WHITE;
-        }*/
+    private static void log(Level level, String originString, String message) {
         if (level == Level.WARNING) {
-            System.err.println(color + "[" + level.getName() + "] (" + origin + ") " + message);
+            System.err.println("[" + level.getName() + "] (" + originString + ") " + message);
         } else {
-            System.out.println(color + "[" + level.getName() + "] (" + origin + ") " + message);
+            System.out.println("[" + level.getName() + "] (" + originString + ") " + message);
         }
     }
 
-    private static List<File> getApplicableFilesOfDirectory(String dir) {
+    public static void log(String message) {
+        StackTraceElement origin = Thread.currentThread().getStackTrace()[2];
+        String originString = origin.getFileName() + ":" + origin.getLineNumber();
+
+        Main.log(Level.SEVERE, originString, message);
+    }
+
+    public static void warn(String message) {
+        StackTraceElement origin = Thread.currentThread().getStackTrace()[2];
+        String originString = origin.getFileName() + ":" + origin.getLineNumber();
+
+        Main.log(Level.WARNING, originString, message);
+    }
+
+    public static void exit(String message) {
+        StackTraceElement origin = Thread.currentThread().getStackTrace()[2];
+        String originString = origin.getFileName() + ":" + origin.getLineNumber();
+
+        Main.log(Level.WARNING, originString, message);
+        System.exit(1);
+    }
+
+    private static @NotNull List<File> getApplicableFilesOfDirectory(String dir) {
         List<File> files = new ArrayList<>();
         File directory = new File(dir);
         if (!directory.exists()) {
-            log(Level.SEVERE, "Main", "Directory " + dir + " does not exist!");
-            System.exit(1);
+            Main.exit("Directory " + dir + " does not exist!");
         }
         if (!directory.isDirectory()) {
-            log(Level.SEVERE, "Main", dir + " is not a directory!");
-            System.exit(1);
+            Main.exit(dir + " is not a directory!");
         }
         File[] directoryFiles = directory.listFiles();
         if (directoryFiles == null) {
-            log(Level.SEVERE, "Main", "Directory " + dir + " is empty!");
-            System.exit(1);
+            Main.exit("Directory " + dir + " is empty!");
+            return new ArrayList<>();
         }
 
         for (File file : directoryFiles) {
@@ -114,12 +112,10 @@ public class Main {
             }
         }
         if (files.size() == 0) {
-            log(Level.SEVERE, "Main", "No applicable files found in directory " + dir + "!");
-            System.exit(1);
+            Main.exit("No applicable files found in directory " + dir + "!");
         }
 
         Collections.sort(files);
-
         return files;
     }
 
@@ -132,14 +128,12 @@ public class Main {
             }
             fileReader.close();
         } catch (FileNotFoundException e) {
-            log(Level.WARNING, "Main", "The provided file could not be found!");
-            System.exit(1);
+            Main.exit("The provided file could not be found!");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         if (lines.size() == 0) {
-            log(Level.WARNING, "Main", "The provided file is empty!");
-            System.exit(1);
+            Main.exit("The provided file is empty!");
         }
         return lines;
     }

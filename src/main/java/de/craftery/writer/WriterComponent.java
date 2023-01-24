@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public abstract class WriterComponent {
     public WriterComponent() {
@@ -42,13 +41,12 @@ public abstract class WriterComponent {
         prepareContent();
         try {
             File file = new File(buildPackagePath());
-            Main.log(Level.SEVERE, "WriterComponent", "Generating file: " + buildPackagePath());
+            Main.log("Generating file: " + buildPackagePath());
             if (!file.exists()) {
                 Files.createDirectories(file.getParentFile().toPath());
                 boolean succeed = file.createNewFile();
                 if (!succeed) {
-                    Main.log(Level.WARNING, "WriterComponent", "Could not create this file!");
-                    System.exit(1);
+                    Main.exit("Could not create this file!");
                 }
             }
             FileWriter myWriter = new FileWriter(buildPackagePath(), StandardCharsets.UTF_8);
@@ -57,7 +55,7 @@ public abstract class WriterComponent {
             }
             myWriter.close();
         } catch (IOException e) {
-            Main.log(Level.WARNING, "WriterComponent", "Writing failed!");
+            Main.warn("Writing failed!");
             e.printStackTrace();
         }
     }

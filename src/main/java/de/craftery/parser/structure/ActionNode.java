@@ -8,8 +8,6 @@ import de.craftery.writer.actions.ActionGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.logging.Level;
-
 public class ActionNode extends StructureNode {
     @Getter
     @Setter
@@ -38,14 +36,13 @@ public class ActionNode extends StructureNode {
         }
 
         if (indentation > this.getMaxIndentation()) {
-            Main.log(Level.WARNING, "ActionNode", "Indentation error!");
-            Main.log(Level.WARNING, "ActionNode", "Expected maximum indentation: " + this.getMaxIndentation());
-            Main.log(Level.WARNING, "ActionNode", "Got: " + indentation);
+            Main.warn("Indentation error!");
+            Main.warn("Expected maximum indentation: " + this.getMaxIndentation());
+            Main.warn("Got: " + indentation);
             System.exit(1);
         }
         if (generator == null) {
-            Main.log(Level.WARNING, "ActionNode", "There is no generator assigned to this node!");
-            System.exit(1);
+            Main.exit("There is no generator assigned to this node!");
         }
         if (indentation < this.baseIndentation) {
             SkriptParser.exitNode().acceptLine(line, indentation);

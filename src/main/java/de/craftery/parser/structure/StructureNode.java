@@ -5,8 +5,6 @@ import de.craftery.Main;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.logging.Level;
-
 public abstract class StructureNode {
     public abstract void acceptLine(Fragment line, int indentation);
     public abstract StructureNode initialize(Fragment line);
@@ -20,8 +18,8 @@ public abstract class StructureNode {
     }
 
     public void reportUnknownToken(String line, String token, int index) {
-        Main.log(Level.WARNING, "StructureNode", "Unknown token: '" + token + "'");
-        Main.log(Level.WARNING, "StructureNode", line);
+        Main.warn("Unknown token: '" + token + "'");
+        Main.warn(line);
         StringBuilder indicateLine = new StringBuilder();
         String[] splitLine = line.trim().split(" ");
         for (int i = 0; i < splitLine.length; i++) {
@@ -34,7 +32,6 @@ public abstract class StructureNode {
                 indicateLine.append(" ".repeat(splitLine[i].length()));
             }
         }
-        Main.log(Level.WARNING, "StructureNode", indicateLine.toString());
-        System.exit(1);
+        Main.exit(indicateLine.toString());
     }
 }

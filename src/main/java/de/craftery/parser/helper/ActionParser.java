@@ -8,7 +8,6 @@ import de.craftery.writer.core.MainGenerator;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,7 +70,7 @@ public class ActionParser {
         String conditionIfItemStack = parseComparisonBetweenVariableAndItemProperties("item" + moduleInt, line);
 
         if (!line.test("from")) {
-            Main.log(Level.WARNING, "ActionParser", "Expected 'from' after 'remove' action");
+            Main.warn( "Expected 'from' after 'remove' action");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
@@ -88,7 +87,7 @@ public class ActionParser {
         this.generator.addBodyLine("}");
 
         if (!line.isEmpty()) {
-            Main.log(Level.WARNING, "ActionParser", "Expected end of line after 'remove' action");
+            Main.warn("Expected end of line after 'remove' action");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
@@ -118,7 +117,7 @@ public class ActionParser {
         line.consume();
 
         if (!line.testString()) {
-            Main.log(Level.WARNING,"ActionParser", "Expected string after command");
+            Main.warn("Expected string after command");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
@@ -155,7 +154,7 @@ public class ActionParser {
 
     private void parseBroadcastAction(Fragment line) {
         if (!line.testString()) {
-            Main.log(Level.WARNING, "ActionParser", "String expected here!");
+            Main.warn("String expected here!");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
         }
@@ -180,7 +179,7 @@ public class ActionParser {
         String targetVariable = parseTargetVariable(line);
 
         if (!line.test("to")) {
-            Main.log(Level.WARNING, "ActionParser", "Expected 'to' here");
+            Main.warn("Expected 'to' here");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
@@ -188,7 +187,7 @@ public class ActionParser {
         line.consume();
 
         if (!line.testByDelimiters('{', '}')) { // starts with variable
-            Main.log(Level.WARNING, "ActionParser", "Expected a variable here");
+            Main.warn("Expected a variable here");
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
@@ -230,7 +229,7 @@ public class ActionParser {
         } else if (line.test("argument")) {
             line.consume();
             if (!line.testInt()) {
-                Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
+                Main.warn("Number of argument expected!");
                 this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
                 System.exit(1);
                 return;
@@ -298,7 +297,7 @@ public class ActionParser {
             Integer amount = line.consumeInt();
 
             if (!line.test("of")) {
-                Main.log(Level.WARNING, "ActionParser", "Expected 'of' here");
+                Main.warn("Expected 'of' here");
                 this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
                 System.exit(1);
                 return null;
@@ -323,7 +322,7 @@ public class ActionParser {
             if (line.test("named")) {
                 line.consume();
                 if (!line.testByDelimiters('{', '}')) {
-                    Main.log(Level.WARNING, "ActionParser", "Expected a constant here");
+                    Main.warn("Expected a constant here");
                     this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
                     System.exit(1);
                     return null;
@@ -392,7 +391,7 @@ public class ActionParser {
             if (line.test("named")) {
                 line.consume();
                 if (!line.testByDelimiters('{', '}')) {
-                    Main.log(Level.WARNING, "ActionParser", "Expected a constant here");
+                    Main.warn("Expected a constant here");
                     this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
                     System.exit(1);
                     return null;
@@ -434,7 +433,7 @@ public class ActionParser {
             mat = line.parseItem();
         }
         if (mat == null) {
-            Main.log(Level.WARNING, "ActionParser", "Unknown item type: " + errTok);
+            Main.warn("Unknown item type: " + errTok);
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return null;
@@ -529,7 +528,7 @@ public class ActionParser {
             String parsedString = replaceKnownInlineStringVariables(line.consumeDelimitedExpression(), false);
             value = "\" " + parsedString + "\"";
         } else {
-            Main.log(Level.WARNING, "ActionParser", "Unknown set value: " + line.getContents());
+            Main.warn("Unknown set value: " + line.getContents());
             this.generator.getNode().reportUnknownToken(line, line.nextToken(), 0);
             System.exit(1);
             return;
@@ -728,7 +727,7 @@ public class ActionParser {
         } else if (fragment.test("argument")) {
             fragment.consume();
             if (!fragment.testInt()) {
-                Main.log(Level.WARNING, "ActionParser", "Number of argument expected!");
+                Main.warn("Number of argument expected!");
                 this.generator.getNode().reportUnknownToken(fragment, fragment.nextToken(), 0);
                 System.exit(1);
                 return "";

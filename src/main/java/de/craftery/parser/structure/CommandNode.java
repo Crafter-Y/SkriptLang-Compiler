@@ -7,15 +7,12 @@ import de.craftery.TimeUtils;
 import de.craftery.parser.SkriptParser;
 import de.craftery.writer.actions.CommandGenerator;
 
-import java.util.logging.Level;
-
 public class CommandNode extends StructureNode {
     private CommandGenerator commandGenerator;
     @Override
     public void acceptLine(Fragment line, int indentation) {
         if (indentation > 1) {
-            Main.log(Level.WARNING, "CommandNode", "Command fields must be indented one time!");
-            System.exit(1);
+            Main.exit("Command fields must be indented one time!");
         }
         if (indentation == 0) {
             SkriptParser.exitNode().acceptLine(line, indentation);
@@ -89,9 +86,8 @@ public class CommandNode extends StructureNode {
     public CommandNode initialize(Fragment line) {
         String original = line.getContents();
         if (!line.nextToken().matches("/\\S+")) {
-            Main.log(Level.WARNING, "CommandNode", "Wrong Syntax!");
-            Main.log(Level.WARNING, "CommandNode", "Example: 'command /command:'");
-            System.exit(1);
+            Main.warn("Wrong Syntax!");
+            Main.exit("Example: 'command /command:'");
         }
         String next = line.consume();
 
@@ -113,8 +109,7 @@ public class CommandNode extends StructureNode {
                 line.consume();
                 this.commandGenerator.addArgument(new CommandArgument(true, CommandArgument.Type.OFFLINE_PLAYER));
             } else {
-                Main.log(Level.WARNING, "CommandNode", "Unknown Argument: " + line.nextToken());
-                System.exit(1);
+                Main.exit("Unknown Argument: " + line.nextToken());
             }
 
         }

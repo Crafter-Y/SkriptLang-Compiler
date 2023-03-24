@@ -2,7 +2,6 @@ package de.craftery.parser.structure.events;
 
 import de.craftery.parser.structure.ActionNode;
 import de.craftery.writer.actions.events.OnChatGenerator;
-import de.craftery.writer.actions.events.PrepareItemEnchantGenerator;
 
 public class OnChatEventNode extends ActionNode {
     public OnChatEventNode() {

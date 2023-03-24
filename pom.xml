@@ -50,6 +50,11 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>skript-releases</id>
+            <name>Skript Repository</name>
+            <url>https://repo.skriptlang.org/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -69,6 +74,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.9.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.SkriptLang</groupId>
+            <artifactId>Skript</artifactId>
+            <version>2.7.0-beta1</version>
         </dependency>
     </dependencies>
 

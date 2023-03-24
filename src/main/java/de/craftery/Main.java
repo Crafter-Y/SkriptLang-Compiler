@@ -19,6 +19,11 @@ public class Main {
             Main.exit("Input folder not provided!");
         }
 
+        if (args.length == 1 && args[0].equalsIgnoreCase("status")) {
+            status();
+            return;
+        }
+
         if (args.length == 1) {
             Main.exit("Output folder not provided!");
         }
@@ -47,6 +52,11 @@ public class Main {
             }
         }
         parser.finish();
+    }
+
+    private static void status() {
+        System.out.println("This will somehow report the status of the implementation if Skript.");
+
     }
 
     private static void log(Level level, String originString, String message) {
